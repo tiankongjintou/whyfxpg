@@ -1,0 +1,78 @@
+{
+  "queue": [
+    {
+      "id": "P0-1",
+      "task": "修复 risk_scorer.py 中风险等级阈值 S≥8000 硬编码错误，修正为 S≥85",
+      "priority": 1,
+      "status": "completed",
+      "attempts": 1,
+      "max_attempts": 3,
+      "commit": "daced94",
+      "completed_at": "2026-08-10T00:00:00Z",
+      "docs": ["docs/07-复现与优化指南.md", "whyfxpg/core/risk_scorer.py"],
+      "verification": "输入总分=80，输出风险等级应为'M'而非'A'"
+    },
+    {
+      "id": "P0-2",
+      "task": "risk_events 表增加 extracted_language 字段（VARCHAR(10)），支持多语言信号区分",
+      "priority": 2,
+      "status": "completed",
+      "attempts": 1,
+      "max_attempts": 3,
+      "commit": "4df9b3b",
+      "completed_at": "2026-08-10T00:01:00Z",
+      "docs": ["docs/03-数据库设计说明书.md", "whyfxpg/core/db.py"],
+      "verification": "PRAGMA table_info('risk_events') 包含 extracted_language 列"
+    },
+    {
+      "id": "P0-3",
+      "task": "创建 whyfxpg Python 包，发布到 GitHub Release",
+      "priority": 3,
+      "status": "pending_user_action",
+      "attempts": 1,
+      "max_attempts": 3,
+      "commit": "91265ea",
+      "completed_at": "2026-08-10T00:02:00Z",
+      "docs": ["docs/技术改造路线图.md"],
+      "verification": "pip install git+https://github.com/... 成功，import whyfxpg 正常",
+      "note": "需用户手动执行: git push origin master --tags，然后在 GitHub 创建 Release"
+    },
+    {
+      "id": "P0-4",
+      "task": "封装 RiskScorer 为独立 assess() 接口，外部 3 行代码可调用",
+      "priority": 4,
+      "status": "completed",
+      "attempts": 1,
+      "max_attempts": 3,
+      "commit": "d9a0273",
+      "completed_at": "2026-08-10T00:03:00Z",
+      "docs": ["docs/02-系统设计说明书.md", "whyfxpg/core/risk_scorer.py"],
+      "verification": "from whyfxpg import RiskScorer; score = RiskScorer.assess(...) 正常工作"
+    },
+    {
+      "id": "P0-5",
+      "task": "在 README.md 增加 API 快速调用示例（3行代码，与 P0-4 配套）",
+      "priority": 5,
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3,
+      "docs": [],
+      "verification": "README.md 包含快速开始示例，5分钟内可上手"
+    },
+    {
+      "id": "P0-6",
+      "task": "编写全球召回数据源调研矩阵文档（20+数据源，覆盖中国/欧盟/美国/日韩/东南亚/拉美）",
+      "priority": 6,
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3,
+      "docs": ["docs/brainstorm-ai-vision.md"],
+      "verification": "文档包含数据源名称、URL、覆盖地区、更新频率、数据格式、接入难度评分"
+    }
+  ],
+  "completed": ["P0-1", "P0-2", "P0-4"],
+  "pending_user_action": ["P0-3"],
+  "blocked": [],
+  "current": null,
+  "last_updated": "2026-08-10T00:04:00Z"
+}
