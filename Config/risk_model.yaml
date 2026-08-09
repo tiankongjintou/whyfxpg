@@ -1,0 +1,199 @@
+version: "1.0"
+model_name: "import_machinery_risk_matrix_v1"
+description: "进口机电产品多维度风险评价模型"
+updated_at: "2026-07-09"
+updated_by: "system"
+
+# 严重度评分（SS）
+severity_levels:
+  灾难性:
+    score: 100
+    description: "死亡、永久残疾、重大火灾爆炸、停工停产、重大环境污染"
+  严重:
+    min: 90
+    max: 99
+    default: 95
+    description: "需住院治疗、肢体截肢或严重骨折、严重经济损失"
+  中等:
+    min: 30
+    max: 89
+    default: 60
+    description: "门诊可治疗、人体可复原、较低经济损失"
+  轻微:
+    min: 0
+    max: 29
+    default: 15
+    description: "轻伤或无需治疗、经济损失可忽略"
+
+# 概率评分（PS）
+probability_levels:
+  非常可能:
+    score: 100
+    description: "3年内频繁出现同类事件；未经培训人员误操作"
+  可能:
+    min: 90
+    max: 99
+    default: 95
+    description: "3-10年内有事件；经培训人员误操作"
+  不太可能:
+    min: 30
+    max: 89
+    default: 60
+    description: "10-30年内偶尔出现；采用成熟技术"
+  几乎不可能:
+    min: 0
+    max: 29
+    default: 15
+    description: "30年以上几乎未出现；技术可靠"
+
+# 风险矩阵：行=概率，列=严重度
+risk_matrix:
+  columns: ["灾难性", "严重", "中等", "轻微"]
+  rows:
+    非常可能: ["S", "S", "S", "M"]
+    可能: ["S", "S", "S", "L"]
+    不太可能: ["M", "M", "L", "A"]
+    几乎不可能: ["L", "L", "A", "A"]
+
+# 国别修正系数
+# 标准体系一致性 + 认证监管水平
+# 系数说明：>1表示风险上调，<1表示风险下调
+country_factors:
+  # 一类：IEC/EN/JIS/AS，与我国基本一致，认证监管水平高
+  欧盟: 0.9
+  德国: 0.9
+  法国: 0.9
+  意大利: 0.9
+  西班牙: 0.9
+  日本: 0.9
+  韩国: 0.9
+  澳大利亚: 0.9
+  新西兰: 0.9
+  英国: 0.9
+  新加坡: 0.9
+
+  # 二类：GSO/GOST/TIS，大多采用IEC，认证监管水平中
+  俄罗斯: 1.0
+  海合会: 1.0
+  沙特阿拉伯: 1.0
+  阿联酋: 1.0
+  泰国: 1.0
+  马来西亚: 1.0
+  越南: 1.0
+
+  # 三类：UL/CSA，与IEC差异较大，但认证监管水平高
+  美国: 1.1
+  加拿大: 1.1
+
+  # 四类：标准体系不完善或认证监管薄弱
+  印度尼西亚: 1.2
+  缅甸: 1.3
+  老挝: 1.3
+  柬埔寨: 1.3
+  印度: 1.2
+  巴基斯坦: 1.3
+  孟加拉国: 1.3
+  非洲国家: 1.3
+  拉丁美洲国家: 1.2
+
+  # 默认
+  unknown: 1.0
+
+# 产品修正系数
+# 暴露人群 + 使用场景
+product_factors:
+  儿童相关产品: 1.3
+  家用厨房电器: 1.2
+  个人护理电器: 1.15
+  照明设备: 1.05
+  信息技术设备: 1.0
+  普通机电: 1.0
+  电动工具: 0.95
+  工业机床: 0.85
+  电线电缆: 1.1
+  插头插座: 1.1
+  unknown: 1.0
+
+# 产品类别关键词（用于自动匹配产品类别）
+product_category_keywords:
+  儿童相关产品:
+    - 儿童
+    - 玩具
+    - 婴儿
+    - 童车
+  家用厨房电器:
+    - 厨房电器
+    - 电饭煲
+    - 微波炉
+    - 烤箱
+    - 榨汁机
+    - 咖啡机
+    - 电热水壶
+  个人护理电器:
+    - 个人护理
+    - 电吹风
+    - 电动剃须刀
+    - 理发器
+    - 美容仪
+  照明设备:
+    - 照明
+    - 灯具
+    - LED
+    - 灯
+  信息技术设备:
+    - 信息技术
+    - 电脑
+    - 笔记本
+    - 显示器
+    - 打印机
+  电动工具:
+    - 电动工具
+    - 电钻
+    - 电锯
+    - 砂光机
+  工业机床:
+    - 机床
+    - 数控
+    - 加工中心
+    - 铣床
+  电线电缆:
+    - 电线电缆
+    - 电缆
+    - 电线
+  插头插座:
+    - 插头
+    - 插座
+    - 转换器
+
+# 历史事件密度修正系数
+history_factor:
+  formula: "1 + 0.1 * min(event_count_12m, 5)"
+  max: 1.5
+  min: 1.0
+
+# 证据来源修正系数
+evidence_factors:
+  dpac_recall: 1.0
+  cpsc_recall: 1.0
+  rapex_safety_gate: 1.0
+  opss_recall: 1.0
+  productsafety_australia: 1.0
+  customs_alert: 0.95
+  standard_update: 0.95
+  news: 0.9
+  social_media: 0.75
+  unknown: 0.9
+
+# 风险等级阈值
+# S≥85, M≥70-84, L≥50-69, A<50
+risk_level_thresholds:
+  S: 85
+  M: 70
+  L: 50
+  A: 0
+
+# 最终评分公式
+# 基础分 = SS * PS
+# 修正后分 = 基础分 * country_factor * product_factor * history_factor * evidence_factor
+# 根据阈值映射到S/M/L/A
+score_formula: "base * country_factor * product_factor * history_factor * evidence_factor"
