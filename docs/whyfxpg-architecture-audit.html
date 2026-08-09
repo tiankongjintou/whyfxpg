@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHYfxpg 架构审计报告</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0b1021;
+    --panel: #13182f;
+    --panel2: #1a2242;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --good: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --border: #2a3655;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); margin: 0; line-height: 1.6; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  h1 { font-size: 2.1rem; margin-bottom: 0.2rem; color: var(--accent); }
+  h2 { font-size: 1.5rem; margin-top: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; color: #f8fafc; }
+  h3 { font-size: 1.15rem; margin-top: 1.6rem; color: #cbd5e1; }
+  .meta { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .callout { background: var(--panel2); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 6px; margin: 16px 0; }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout.bad { border-left-color: var(--bad); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 18px 0; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+  .card .num { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .card .label { color: var(--muted); font-size: 0.9rem; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; }
+  th { background: var(--panel2); color: #e2e8f0; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+  .tag.deep { background: rgba(52,211,153,0.15); color: var(--good); }
+  .tag.shallow { background: rgba(248,113,113,0.15); color: var(--bad); }
+  .tag.legacy { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .tag.ok { background: rgba(56,189,248,0.15); color: var(--accent); }
+  .metric { font-variant-numeric: tabular-nums; }
+  .mermaid { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin: 16px 0; }
+  code { background: rgba(56,189,248,0.12); padding: 2px 5px; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  .recommendation { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .recommendation strong { color: var(--accent); }
+  .footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>WHYfxpg 架构审计报告</h1>
+  <div class="meta">基于 Matt Pocock 深模块词汇（deep / shallow modules, seams, adapters, locality, leverage）<br>审计时间：2026-08-01 · 审计对象：D:\Seafile\SeaHome\TempProjects\WHYfxpg\whyfxpg</div>
+
+  <div class="callout">
+    <strong>关键结论</strong>：经过 Phase 1–4 重构，系统已经具备清晰的 <strong>Ports → Adapters → Services → Core</strong> 分层。
+    但 <code>core/stores.py</code>（746 LOC / 82 个公开成员）仍是最大的“浅而宽”模块，
+    且 <code>webui/screens/causal.py</code> 仍然直接导入 <code>core.db</code> 与 <code>CausalKnowledge</code>，是 UI 层最后一个数据库泄漏点。
+  </div>
+
+  <h2>📊 体量快照</h2>
+  <div class="grid">
+    <div class="card"><span class="num">95</span><span class="label">Python 文件</span></div>
+    <div class="card"><span class="num">11,314</span><span class="label">有效代码行</span></div>
+    <div class="card"><span class="num">146</span><span class="label">pytest 用例</span></div>
+    <div class="card"><span class="num">42%</span><span class="label">core 占比</span></div>
+    <div class="card"><span class="num">29%</span><span class="label">tests 占比</span></div>
+    <div class="card"><span class="num">1</span><span class="label">UI 层数据库泄漏</span></div>
+  </div>
+
+  <h2>🏗️ 分层与耦合</h2>
+  <div class="mermaid">
+graph TD
+    subgraph Entry["入口层"]
+        main[main.py]
+        webui[webui/app.py]
+        tests[tests]
+    end
+
+    subgraph CoreModern["Core — 现代 / 已收口"]
+        rs[RiskScorer]
+        rer[RiskEvaluationRunner]
+        fetch[Fetcher]
+        alert[AlertEngine]
+    end
+
+    subgraph CoreLegacy["Core — 遗留 / 宽接口"]
+        stores[(stores.py)]
+        rp[RiskPredictor]
+        mm[multimodal]
+        ck[CausalKnowledge]
+        ee[ExtractEngine]
+        llmc[LLMClient]
+        rg[ReportGenerator]
+        fl[FeedbackLearner]
+    end
+
+    subgraph Ports["Ports — 窄接口"]
+        lp[LLMPort]
+        sp[SourcePort]
+        rrp[ReportRendererPort]
+        cp[CausalPort]
+        ap[AlertPublisher]
+    end
+
+    subgraph Adapters["Adapters — 外部实现"]
+        oa[OpenAICompatAdapter]
+        hs[HttpSourceAdapter]
+        ra[Word/ExcelReportAdapter]
+        dca[DbCausalAdapter]
+        dba[DbAlertPublisher]
+    end
+
+    subgraph Services["Services — 编排 / 用例"]
+        ls[LLMService]
+        rb[ReportBuilder]
+        cr[CausalReasoning]
+        revs[ReviewService]
+    end
+
+    subgraph WebUI["WebUI — 展示"]
+        rm[DashboardReadModel]
+        pres[BigScreenPresenter]
+        screens[screens/*.py]
+    end
+
+    main --> rer
+    main --> llmc
+    webui --> screens
+    screens --> rm
+    rm --> stores
+    screens -.->|leak| ck
+    pres --> rm
+
+    rs --> cp
+    rer --> rs
+    rer --> ls
+    rer --> ap
+    ls --> lp
+    lp --> oa
+    oa --> llmc
+    fetch --> sp
+    sp --> hs
+    rb --> ls
+    rrp --> ra
+    revs --> stores
+    dba --> stores
+
+    style CoreLegacy fill:#2a1b1b,stroke:#f87171
+    style stores fill:#3d2222,stroke:#f87171
+    style screens stroke:#fbbf24
+  </div>
+
+  <div class="callout warn">
+    <strong>图例说明</strong>：红色区域是“遗留浅模块”——它们仍被直接调用，且接口宽度 ≈ 实现宽度；
+    黄色描边的 <code>screens</code> 与 <code>CausalKnowledge</code> 之间是 UI 层唯一 remaining 的直接数据库泄漏。
+  </div>
+
+  <h2>🔬 Deep / Shallow 模块评分</h2>
+  <p>判断标准：接口越窄（公开成员少）、实现越厚（业务复杂）、被越多外部调用 → 越深；反之越浅。</p>
+  <table>
+    <thead>
+      <tr><th>模块</th><th>实现厚度 LOC</th><th>接口宽度（公开成员）</th><th>被调用文件数</th><th>评定</th><th>证据</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>core/stores.py</code></td><td class="metric">746</td><td class="metric">82</td><td class="metric">9</td><td><span class="tag shallow">shallow / wide</span></td><td>一个文件包含 UnitOfWork + 5 个 Store + 1 GraphView；职责过多</td></tr>
+      <tr><td><code>core/risk_predictor.py</code></td><td class="metric">524</td><td class="metric">91</td><td class="metric">2</td><td><span class="tag shallow">shallow / leaky</span></td><td>时间序列、预测、预警写入、国别/产品分析全部混在一起，无 port</td></tr>
+      <tr><td><code>core/multimodal.py</code></td><td class="metric">500</td><td class="metric">49</td><td class="metric">0</td><td><span class="tag legacy">legacy / unused</span></td><td>PDF/图片/网页解析与 HTTP 请求耦合；未被新 adapter 使用</td></tr>
+      <tr><td><code>core/feedback_learner.py</code></td><td class="metric">410</td><td class="metric">85</td><td class="metric">1</td><td><span class="tag legacy">low leverage</span></td><td>功能独立但几乎无人调用，可合并或移除</td></tr>
+      <tr><td><code>core/llm_client.py</code></td><td class="metric">406</td><td class="metric">31</td><td class="metric">2</td><td><span class="tag legacy">legacy shim</span></td><td>已用 LLMPort + OpenAICompatAdapter 包覆，应逐步退出</td></tr>
+      <tr><td><code>core/causal_knowledge.py</code></td><td class="metric">335</td><td class="metric">39</td><td class="metric">4</td><td><span class="tag shallow">shallow</span></td><td> explain_event 认知复杂度 21；webui 仍直接引用</td></tr>
+      <tr><td><code>core/extract_engine.py</code></td><td class="metric">319</td><td class="metric">49</td><td class="metric">2</td><td><span class="tag shallow">shallow</span></td><td>提取、关键词、正则、日期识别、LLM 调用全在一个入口</td></tr>
+      <tr><td><code>webui/bigscreen.py</code></td><td class="metric">163</td><td class="metric">3</td><td class="metric">1</td><td><span class="tag shallow">render heavy</span></td><td>render_bigscreen 认知复杂度 18；已全部使用 view model，但 UI 代码仍长</td></tr>
+      <tr><td><code>services/llm_service.py</code></td><td class="metric">236</td><td class="metric">25</td><td class="metric">5</td><td><span class="tag ok">borderline</span></td><td>语义化方法多，但语义统一为 LLM 请求；可归约为更窄的 facade</td></tr>
+      <tr><td><code>services/review_service.py</code></td><td class="metric">202</td><td class="metric">19</td><td class="metric">3</td><td><span class="tag ok">ok</span></td><td>已从页面层抽出，接口稳定</td></tr>
+      <tr><td><code>core/risk_scorer.py</code></td><td class="metric">194</td><td class="metric">36</td><td class="metric">1</td><td><span class="tag deep">deep ✅</span></td><td>纯策略；无 DB/网络/Streamlit 依赖；可独立测试</td></tr>
+      <tr><td><code>core/risk_evaluation_runner.py</code></td><td class="metric">182</td><td class="metric">28</td><td class="metric">1</td><td><span class="tag deep">deep ✅</span></td><td>编排入口窄，依赖注入端口</td></tr>
+      <tr><td><code>ports/*.py</code></td><td class="metric">172</td><td class="metric">~15</td><td class="metric">-</td><td><span class="tag deep">deep ✅</span></td><td>每个 port 1–2 个抽象方法，是理想的 seam</td></tr>
+      <tr><td><code>adapters/*</code></td><td class="metric">622</td><td class="metric">-</td><td class="metric">-</td><td><span class="tag ok">ok</span></td><td>实现厚、接口窄，职责单一</td></tr>
+    </tbody>
+  </table>
+
+  <h2>🧩 Seam 清单</h2>
+  <table>
+    <thead><tr><th>Seam</th><th>Port</th><th>Adapters</th><th>Services 使用</th><th>状态</th></tr></thead>
+    <tbody>
+      <tr><td>LLM</td><td>LLMPort</td><td>OpenAICompatAdapter, InMemoryAdapter</td><td>LLMService, RiskEvaluationRunner, ReportBuilder</td><td><span class="tag deep">已收口</span></td></tr>
+      <tr><td>网络采集</td><td>SourcePort</td><td>HttpSourceAdapter, InMemorySourceAdapter</td><td>Fetcher</td><td><span class="tag deep">已收口</span></td></tr>
+      <tr><td>报告渲染</td><td>ReportRendererPort</td><td>WordReportAdapter, ExcelReportAdapter, InMemoryReportAdapter</td><td>ReportBuilder / ReportGenerator</td><td><span class="tag deep">已收口</span></td></tr>
+      <tr><td>因果推理</td><td>CausalPort</td><td>DbCausalAdapter, InMemoryCausalAdapter</td><td>CausalReasoning, RiskScorer</td><td><span class="tag ok">核心已收口</span></td></tr>
+      <tr><td>预警发布</td><td>AlertPublisher</td><td>DbAlertPublisher, InMemoryAlertPublisher</td><td>AlertEngine, RiskPredictor</td><td><span class="tag ok">已收口</span></td></tr>
+      <tr><td>人工复核</td><td>ReviewService</td><td>（无外部适配器）</td><td>webui/screens/review.py</td><td><span class="tag deep">已收口</span></td></tr>
+      <tr><td>数据库访问</td><td>UnitOfWork / Stores</td><td>SQLite / 内存连接</td><td>全系统</td><td><span class="tag shallow">待拆分</span></td></tr>
+      <tr><td>风险预测 / 反馈学习</td><td>（无 port）</td><td>（无）</td><td>RiskPredictor, FeedbackLearner</td><td><span class="tag shallow">未收口</span></td></tr>
+    </tbody>
+  </table>
+
+  <h2>🔥 热点与局部性违规</h2>
+  <ul>
+    <li><strong>最大热点：</strong><code>core/stores.py</code> 746 LOC，包含 <code>UnitOfWork</code>、<code>AlertStore</code>、<code>RiskEventStore</code>、<code>SummaryStore</code>、<code>CausalGraphStore</code> 等。违反“一个文件一个概念”的 locality。</li>
+    <li><strong>认知复杂度冠军：</strong><code>webui/bigscreen.render_bigscreen</code> 认知复杂度 18；<code>core/risk_model.run</code> 19；<code>core/causal_knowledge.explain_event</code> 21。说明这些函数仍承担多段不相关决策。</li>
+    <li><strong>UI 层泄漏：</strong><code>webui/screens/causal.py</code> 直接调用 <code>init_db()</code>、<code>init_causal_schema()</code> 与 <code>CausalKnowledge</code>，是 screens 中唯一导入 <code>core.db</code> 的模块。</li>
+    <li><strong>legacy 依赖：</strong><code>adapters/llm/openai_compat_adapter.py</code> 仍回退到 <code>core.llm_client</code>，意味着旧的全局单例仍是实际 HTTP 实现。</li>
+    <li><strong>低利用率：</strong><code>core/feedback_learner.py</code> 410 LOC 仅被 1 个文件导入，可能是“规划了但未使用”的功能。</li>
+  </ul>
+
+  <h2>📈 推荐路线图</h2>
+  <div class="recommendation">
+    <strong>R1 · 拆分 core/stores.py（最高 leverage）</strong><br>
+    将 <code>UnitOfWork</code>、<code>AlertStore</code>、<code>RiskEventStore</code>、<code>SummaryStore</code>、<code>CausalGraphStore</code> 拆为独立模块。
+    每个 store 的接口宽度会从 82 降到 ~6–10，locality 显著提升。
+  </div>
+  <div class="recommendation">
+    <strong>R2 · 消除 UI 最后一个 core.db 泄漏</strong><br>
+    将 <code>webui/screens/causal.py</code> 改为调用 <code>CausalPort</code>（注入 <code>DbCausalAdapter</code>）或新的 <code>CausalService</code>，不再直接 import <code>core.db</code> 与 <code>CausalKnowledge</code>。
+  </div>
+  <div class="recommendation">
+    <strong>R3 · 彻底替换 core/llm_client.py</strong><br>
+    让 <code>OpenAICompatAdapter</code> 直接基于 <code>httpx</code> 实现，而非回退到旧单例；随后删除 <code>core/llm_client.py</code>，LLMPort 成为唯一 LLM seam。
+  </div>
+  <div class="recommendation">
+    <strong>R4 · 将预测与反馈学习抽象为端口</strong><br>
+    <code>RiskPredictor</code> 与 <code>FeedbackLearner</code> 混合算法、统计、预警写入，建议拆出 <code>ForecastPort</code> / <code>LearningPort</code>，或用独立 service 收口。
+  </div>
+  <div class="recommendation">
+    <strong>R5 · 把 multimodal 下放到 adapters</strong><br>
+    PDF / 图片 / 网页内容理解不是核心领域逻辑，应改为 <code>DocumentPort</code> + 适配器，避免 <code>core</code> 膨胀。
+  </div>
+  <div class="recommendation">
+    <strong>R6 · 架构健康度检查脚本</strong><br>
+    在 CI 中增加：webui/screens 中除 <code>read_model</code> 外不得 import <code>core.db</code>；<code>requests</code> / <code>httpx</code> 只能出现在 adapters；core 中不得 import <code>streamlit</code>。
+  </div>
+  <div class="recommendation">
+    <strong>R7 · 端到端集成测试</strong><br>
+    当前 146 个用例多为单元测试。增加一条“内存 DB 完整 pipeline”集成测试：采集 → 提取 → 评分 → 预警 → 报告，验证 seams 不泄漏真实网络/文件系统。
+  </div>
+
+  <h2>🎯 下一步建议</h2>
+  <p>按 leverage 排序，建议先执行 <strong>R1</strong>（拆分 stores）和 <strong>R2</strong>（消除 causal 页面泄漏），
+  这两件事能让 <code>core</code> 的接口宽度从 82 降到约 20，并让 WebUI 层彻底无 direct DB。</p>
+
+  <div class="footer">
+    报告由 WHYfxpg 代码库静态分析 + 图数据库生成 · 数据截止日期：2026-08-01 · 146 tests passing
+  </div>
+</div>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+</script>
+</body>
+</html>
