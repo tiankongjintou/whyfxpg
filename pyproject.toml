@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whyfxpg"
+version = "0.1.0"
+description = "进口机电产品风险评价系统 — Customs Import Machinery Risk Evaluation Platform"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "WHYfxpg Team", email = "whyfxpg@example.com"}
+]
+keywords = ["risk-assessment", "customs", "import-inspection", "product-safety", "machinery"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Government",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+]
+
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.28.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "sqlite-utils>=3.35.0",
+    "python-dateutil>=2.8.0",
+    "loguru>=0.7.0",
+    "pydantic>=2.0.0",
+    "streamlit>=1.28.0",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "python-docx>=0.8.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+llm = [
+    "openai>=1.0.0",
+    "anthropic>=0.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/whyfxpg/whyfxpg"
+Documentation = "https://github.com/whyfxpg/whyfxpg#readme"
+Repository = "https://github.com/whyfxpg/whyfxpg"
+Issues = "https://github.com/whyfxpg/whyfxpg/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["whyfxpg*"]
+
+[tool.setuptools.package-data]
+whyfxpg = ["py.typed"]
