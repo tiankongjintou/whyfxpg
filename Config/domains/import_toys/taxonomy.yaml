@@ -1,0 +1,32 @@
+taxonomy_id: import_toys_hs
+domain_id: import_toys
+version_id: "1.0"
+nodes:
+  - node_id: root
+    name: 玩具及儿童用品
+    aliases: ["玩具", "儿童用品"]
+    keywords: ["玩具"]
+
+  - node_id: mechanical
+    parent_id: root
+    name: 机械/物理玩具
+    aliases: ["积木", "小车", "运动玩具"]
+    keywords: ["小零件", "窒息", "夹伤", "锐利边缘"]
+
+  - node_id: electronic
+    parent_id: root
+    name: 电子/电动玩具
+    aliases: ["电动玩具", "遥控玩具", "发光玩具"]
+    keywords: ["电击", "电池泄漏", "过热", "短路"]
+
+  - node_id: plush
+    parent_id: root
+    name: 毛绒/纺织玩具
+    aliases: ["布娃娃", "毛绒玩具", "填充玩具"]
+    keywords: ["可燃", "甲醛", "掉毛", "缝线"]
+
+  - node_id: water
+    parent_id: mechanical
+    name: 水上/弹射类玩具
+    aliases: ["水枪", "弹弓", "飞镖"]
+    keywords: ["眼伤", "弹射", "溺水风险"]

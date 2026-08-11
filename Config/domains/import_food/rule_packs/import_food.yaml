@@ -1,0 +1,31 @@
+rule_pack_id: import_food
+domain_id: import_food
+name: 进口食品领域规则包
+description: 针对进口食品的风险规则覆盖
+inherits:
+  - base
+rules:
+  - rule_id: allergen_label_risk
+    name: 过敏原标签风险
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["过敏原", "标签", "未标注"]
+      threshold: 1
+    severity: high
+
+  - rule_id: microbial_alert
+    name: 微生物/致病菌预警
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["沙门氏菌", "李斯特菌", "大肠杆菌", "致病菌", "微生物超标"]
+      threshold: 1
+    severity: high
+
+  - rule_id: country_burst
+    name: 国别事件聚集预警（食品版）
+    enabled: true
+    condition:
+      threshold: 5
+    severity: high

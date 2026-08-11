@@ -110,7 +110,7 @@ def test_notify_delivers_matching_event(calls: list[dict]) -> None:
         json={"url": "https://a.com/hook", "event_types": ["new_high_risk_event"]},
     )
     # 通过 app 的 WebhookService 触发
-    service: WebhookService = client.app.state.webhook_service
+    service: WebhookService = client.app.state.webhook_service  # type: ignore[attr-defined]
     delivered = service.notify(
         ACCOUNT.account_id, "new_high_risk_event", {"event_id": "e1", "rs_level": "S"}
     )
@@ -128,7 +128,7 @@ def test_notify_skips_non_matching_event(calls: list[dict]) -> None:
         headers=_auth(),
         json={"url": "https://a.com/hook", "event_types": ["alert_triggered"]},
     )
-    service: WebhookService = client.app.state.webhook_service
+    service: WebhookService = client.app.state.webhook_service  # type: ignore[attr-defined]
     delivered = service.notify(ACCOUNT.account_id, "new_high_risk_event", {})
     assert delivered == 0
     assert calls == []
@@ -141,8 +141,8 @@ def test_delivery_failure_retries_and_logs(calls: list[dict]) -> None:
         headers=_auth(),
         json={"url": "https://a.com/hook", "event_types": ["alert_triggered"]},
     )
-    service: WebhookService = client.app.state.webhook_service
-    adapter: InMemoryWebhookAdapter = service._port
+    service: WebhookService = client.app.state.webhook_service  # type: ignore[attr-defined]
+    adapter: InMemoryWebhookAdapter = service._port  # type: ignore[assignment]
     delivered = service.notify(ACCOUNT.account_id, "alert_triggered", {"a": 1})
     assert delivered == 0
     assert len(calls) == 3  # 重试 3 次
@@ -158,7 +158,7 @@ def test_delete_account_webhooks(calls: list[dict]) -> None:
             headers=_auth(),
             json={"url": f"https://{i}.com/hook", "event_types": ["alert_triggered"]},
         )
-    service: WebhookService = client.app.state.webhook_service
+    service: WebhookService = client.app.state.webhook_service  # type: ignore[attr-defined]
     removed = service.delete_account_webhooks(ACCOUNT.account_id)
     assert removed == 3
     assert service.list(ACCOUNT.account_id) == []

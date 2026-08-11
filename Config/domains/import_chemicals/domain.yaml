@@ -1,0 +1,9 @@
+domain_id: import_chemicals
+name: 进口化工产品
+description: 针对进口化工、化学品的质量安全、合规与风险识别域（HS 第 28/29/32/35/38 章相关）
+risk_model: risk_model.yaml
+keywords: keywords.yaml
+taxonomy: domains/import_chemicals/taxonomy.yaml
+dimensions: domains/import_chemicals/dimensions.yaml
+rule_packs_dir: domains/import_chemicals/rule_packs
+country_factor_overrides: {}

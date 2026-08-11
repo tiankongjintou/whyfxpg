@@ -1,0 +1,182 @@
+version: "1.0"
+description: "进口机电产品风险评价关键词体系"
+updated_at: "2026-07-09"
+updated_by: "system"
+
+keyword_sets:
+  default:
+    description: "默认关键词（中文来源）"
+    categories:
+      product:
+        - 机电
+        - 机电产品
+        - 家用电器
+        - 厨房电器
+        - 电动工具
+        - 照明设备
+        - 灯具
+        - 信息技术设备
+        - 电脑
+        - 电源适配器
+        - 充电器
+        - 电线电缆
+        - 插头插座
+        - 开关
+        - 个人护理电器
+        - 电动剃须刀
+        - 电吹风
+        - 儿童用品
+        - 玩具
+        - 机床
+      hazard:
+        - 触电
+        - 电击
+        - 漏电
+        - 绝缘
+        - 短路
+        - 过热
+        - 火灾
+        - 燃烧
+        - 烫伤
+        - 机械伤害
+        - 夹伤
+        - 割伤
+        - 挤压
+        - 撞击
+        - 断裂
+        - 噪声
+        - 振动
+        - 辐射
+        - 化学危险
+        - 有害物质
+        - 重金属
+        - 召回
+        - 不合格
+        - 缺陷
+      country:
+        - 中国
+        - 欧盟
+        - 德国
+        - 法国
+        - 意大利
+        - 西班牙
+        - 美国
+        - 加拿大
+        - 日本
+        - 韩国
+        - 澳大利亚
+        - 新西兰
+        - 英国
+        - 俄罗斯
+        - 东盟
+        - 泰国
+        - 马来西亚
+        - 印度尼西亚
+        - 越南
+        - 新加坡
+        - 印度
+      standard:
+        - GB
+        - IEC
+        - EN
+        - UL
+        - CSA
+        - JIS
+        - AS
+        - NZS
+        - GOST
+        - GSO
+        - TIS
+        - PSE
+        - KC
+        - CE
+
+  international:
+    description: "国际来源关键词（英文）"
+    categories:
+      product:
+        - electrical appliance
+        - household appliance
+        - kitchen appliance
+        - power tool
+        - lighting equipment
+        - luminaire
+        - IT equipment
+        - computer
+        - power adapter
+        - charger
+        - electric cable
+        - plug
+        - socket
+        - switch
+        - personal care appliance
+        - electric shaver
+        - hair dryer
+        - toy
+        - child
+        - machinery
+        - machine tool
+      hazard:
+        - electric shock
+        - electrocution
+        - electric shock
+        - insulation
+        - short circuit
+        - overheating
+        - fire
+        - burn
+        - mechanical injury
+        - entrapment
+        - laceration
+        - crushing
+        - impact
+        - fracture
+        - noise
+        - vibration
+        - radiation
+        - chemical
+        - heavy metal
+        - recall
+        - non-compliant
+        - defect
+        - hazard
+        - risk
+      country:
+        - China
+        - European Union
+        - Germany
+        - France
+        - Italy
+        - Spain
+        - United States
+        - USA
+        - Canada
+        - Japan
+        - Korea
+        - Australia
+        - New Zealand
+        - UK
+        - United Kingdom
+        - Russia
+        - ASEAN
+        - Thailand
+        - Malaysia
+        - Indonesia
+        - Vietnam
+        - Singapore
+        - India
+      standard:
+        - GB
+        - IEC
+        - EN
+        - UL
+        - CSA
+        - JIS
+        - AS
+        - NZS
+        - GOST
+        - GSO
+        - TIS
+        - PSE
+        - KC
+        - CE

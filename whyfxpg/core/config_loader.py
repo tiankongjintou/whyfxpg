@@ -41,7 +41,7 @@ class ConfigLoader:
 
     def __init__(self, config_dir: str | None = None):
         self.config_dir = Path(config_dir) if config_dir else DEFAULT_CONFIG_DIR
-        self._cache = {}
+        self._cache: dict = {}
 
     def _path(self, filename: str) -> Path:
         return self.config_dir / filename

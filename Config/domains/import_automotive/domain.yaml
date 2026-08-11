@@ -1,0 +1,9 @@
+domain_id: import_automotive
+name: 进口汽车及零部件
+description: 针对进口汽车整车、零部件、轮胎、制动系统的安全召回与质量风险评估域（HS 第 87/88 章相关）
+risk_model: risk_model.yaml
+keywords: keywords.yaml
+taxonomy: domains/import_automotive/taxonomy.yaml
+dimensions: domains/import_automotive/dimensions.yaml
+rule_packs_dir: domains/import_automotive/rule_packs
+country_factor_overrides: {}

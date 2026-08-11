@@ -1,0 +1,22 @@
+{
+  "run_id": "3a52fdc3-282d-4e01-b88a-132d62727fbe",
+  "pipeline_name": "whyfxpg_default",
+  "created_at": "2026-08-04T15:07:13.805702",
+  "stage_statuses": [
+    "partial",
+    "skipped",
+    "success",
+    "skipped",
+    "skipped",
+    "success",
+    "success",
+    "success",
+    "skipped"
+  ],
+  "artifact_handles": {
+    "extraction": null,
+    "evaluation": null,
+    "alerting": null,
+    "reporting": null
+  }
+}

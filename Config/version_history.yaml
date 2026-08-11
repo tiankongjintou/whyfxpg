@@ -1,0 +1,12 @@
+history:
+  - version: "1.0"
+    date: "2026-07-09"
+    author: "system"
+    description: "初始配置版本"
+    files:
+      - sources.yaml
+      - keywords.yaml
+      - extract_rules.yaml
+      - risk_model.yaml
+      - alert_rules.yaml
+    changes: "创建初始配置"

@@ -1,0 +1,56 @@
+dimensions:
+  - dimension_id: country
+    name: 国别
+    description: 事件发生国别 / 原产国
+    dimension_type: categorical
+    source_field: country
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: hazard_type
+    name: 危害类型
+    description: 产品缺陷或危害类型
+    dimension_type: categorical
+    source_field: hazard_type
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: severity_level
+    name: 严重度等级
+    description: 伤害严重度等级
+    dimension_type: categorical
+    source_field: severity_level
+    weight: 1.2
+    aggregation: count
+
+  - dimension_id: rs_level
+    name: 风险等级
+    description: S/M/L/A 风险等级
+    dimension_type: categorical
+    source_field: rs_level
+    weight: 1.5
+    aggregation: count
+
+  - dimension_id: total_score
+    name: 风险分
+    description: 风险总分（数值型）
+    dimension_type: numeric
+    source_field: total_score
+    weight: 1.0
+    aggregation: max
+
+  - dimension_id: product_category
+    name: 食品类别
+    description: 动物源性 / 植物源性 / 加工食品
+    dimension_type: categorical
+    source_field: product_category
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: ingredient_risk
+    name: 配料风险
+    description: 过敏原、转基因、添加剂等配料相关风险
+    dimension_type: categorical
+    source_field: ingredient_risk
+    weight: 1.2
+    aggregation: count

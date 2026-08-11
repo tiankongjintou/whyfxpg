@@ -1,0 +1,9 @@
+domain_id: import_food
+name: 进口食品
+description: 针对进口食品、农产品、饮料的食品安全与合规风险评估域（HS 第 1-24 章相关）
+risk_model: risk_model.yaml
+keywords: keywords.yaml
+taxonomy: domains/import_food/taxonomy.yaml
+dimensions: domains/import_food/dimensions.yaml
+rule_packs_dir: domains/import_food/rule_packs
+country_factor_overrides: {}

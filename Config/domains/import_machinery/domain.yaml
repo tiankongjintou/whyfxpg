@@ -1,0 +1,9 @@
+domain_id: import_machinery
+name: 进口机电产品
+description: 默认海关进口机电产品风险评估域（HS 第 84/85 章相关）
+risk_model: risk_model.yaml
+keywords: keywords.yaml
+taxonomy: domains/import_machinery/taxonomy.yaml
+dimensions: domains/import_machinery/dimensions.yaml
+rule_packs_dir: domains/import_machinery/rule_packs
+country_factor_overrides: {}

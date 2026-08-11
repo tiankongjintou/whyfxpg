@@ -1,0 +1,38 @@
+taxonomy_id: import_automotive_hs
+domain_id: import_automotive
+version_id: "1.0"
+nodes:
+  - node_id: root
+    name: 汽车及零部件
+    aliases: ["机动车", "车辆"]
+    keywords: ["汽车"]
+
+  - node_id: complete_vehicle
+    parent_id: root
+    name: 整车
+    aliases: ["乘用车", "商用车", "摩托车"]
+    keywords: ["碰撞", "起火", "制动失灵"]
+
+  - node_id: components
+    parent_id: root
+    name: 汽车零部件
+    aliases: ["零部件", "配件"]
+    keywords: ["召回", "断裂", "失效"]
+
+  - node_id: brake
+    parent_id: components
+    name: 制动系统
+    aliases: ["刹车", "制动", "ABS"]
+    keywords: ["制动失灵", "刹车片", "漏油"]
+
+  - node_id: tire
+    parent_id: components
+    name: 轮胎
+    aliases: ["车胎", "橡胶轮胎"]
+    keywords: ["爆胎", "鼓包", "龟裂"]
+
+  - node_id: electrical
+    parent_id: components
+    name: 电气/电子系统
+    aliases: ["线束", "电池", "电机"]
+    keywords: ["短路", "自燃", "电池热失控"]

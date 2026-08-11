@@ -1,0 +1,78 @@
+version: '1.0'
+description: 进口机电产品风险评价系统信息源配置
+updated_at: '2026-07-09'
+updated_by: system
+sources:
+  cpsc_recall:
+    name: 美国CPSC召回
+    url: https://www.cpsc.gov/Recalls
+    source_type: web
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+    selector:
+      list: .recall-item
+      title: h3 a
+      link: h3 a@href
+      date: .recall-date
+      content: .recall-summary
+  rapex_safety_gate:
+    name: 欧盟RAPEX/Safety Gate
+    url: https://ec.europa.eu/safety-gate-alerts/screen/webForm
+    source_type: web
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: dynamic
+    parser: html_table
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+    selector:
+      list: table tbody tr
+      title: td:nth-child(3)
+      link: td:nth-child(3) a@href
+      date: td:nth-child(1)
+      country: td:nth-child(2)
+      content: td:nth-child(4)
+  opss_recall:
+    name: 英国OPSS产品召回
+    url: https://www.gov.uk/guidance/product-recalls-and-alerts
+    source_type: web
+    enabled: true
+    priority: 2
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+    selector:
+      list: .govuk-list li
+      title: a
+      link: a@href
+      date: ''
+      content: ''
+  productsafety_australia:
+    name: 澳大利亚产品安全
+    url: https://www.productsafety.gov.au/
+    source_type: web
+    enabled: false
+    priority: 2
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+    selector:
+      list: .news-list li
+      title: a
+      link: a@href
+      date: .date
+      content: ''

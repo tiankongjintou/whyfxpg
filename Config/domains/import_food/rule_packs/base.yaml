@@ -1,0 +1,15 @@
+rule_pack_id: base
+domain_id: import_food
+name: 基础规则包
+description: 跨领域通用规则模板
+inherits: []
+rules:
+  - rule_id: country_burst
+    name: 国别事件聚集预警
+    enabled: true
+    condition:
+      type: count_by_dimension
+      dimension: country
+      window: 30d
+      threshold: 2
+    severity: medium

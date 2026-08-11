@@ -1,0 +1,31 @@
+rule_pack_id: import_toys
+domain_id: import_toys
+name: 进口玩具领域规则包
+description: 针对进口玩具的风险规则覆盖
+inherits:
+  - base
+rules:
+  - rule_id: choking_hazard
+    name: 窒息/小零件风险
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["小零件", "窒息", "吞咽", "锐利边缘"]
+      threshold: 1
+    severity: high
+
+  - rule_id: chemical_toy
+    name: 玩具化学风险
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["邻苯二甲酸酯", "重金属", "甲醛", "可迁移元素"]
+      threshold: 1
+    severity: high
+
+  - rule_id: country_burst
+    name: 国别事件聚集预警（玩具版）
+    enabled: true
+    condition:
+      threshold: 5
+    severity: high

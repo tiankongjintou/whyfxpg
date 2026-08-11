@@ -1,0 +1,31 @@
+rule_pack_id: import_automotive
+domain_id: import_automotive
+name: 进口汽车及零部件领域规则包
+description: 针对进口汽车及零部件的风险规则覆盖
+inherits:
+  - base
+rules:
+  - rule_id: brake_system_alert
+    name: 制动系统安全预警
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["制动失灵", "刹车", "ABS 故障", "制动液泄漏"]
+      threshold: 1
+    severity: high
+
+  - rule_id: recall_burst
+    name: 召回事件聚集预警
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["召回", "批次", "缺陷"]
+      threshold: 1
+    severity: medium
+
+  - rule_id: country_burst
+    name: 国别事件聚集预警（汽车版）
+    enabled: true
+    condition:
+      threshold: 5
+    severity: high

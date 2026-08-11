@@ -1,0 +1,22 @@
+rule_pack_id: import_chemicals
+domain_id: import_chemicals
+name: 进口化工领域规则包
+description: 针对进口化工产品的规则覆盖
+inherits:
+  - base
+rules:
+  - rule_id: banned_substance_alert
+    name: 禁限用物质预警
+    enabled: true
+    condition:
+      type: keyword_match
+      keywords: ["REACH", "SVHC", "禁用", "限用", "致癌物"]
+      threshold: 1
+    severity: high
+
+  - rule_id: country_burst
+    name: 国别事件聚集预警（化工版）
+    enabled: true
+    condition:
+      threshold: 5
+    severity: high

@@ -1,0 +1,38 @@
+taxonomy_id: import_food_hs
+domain_id: import_food
+version_id: "1.0"
+nodes:
+  - node_id: root
+    name: 进口食品
+    aliases: ["食品", "食物"]
+    keywords: ["食品", "农产品"]
+
+  - node_id: animal
+    parent_id: root
+    name: 动物源性食品
+    aliases: ["肉", "奶", "蛋", "水产品"]
+    keywords: ["微生物", "兽药残留", "疫病"]
+
+  - node_id: plant
+    parent_id: root
+    name: 植物源性食品
+    aliases: ["水果", "蔬菜", "谷物", "坚果"]
+    keywords: ["农药残留", "真菌毒素", "检疫"]
+
+  - node_id: processed
+    parent_id: root
+    name: 加工食品
+    aliases: ["预包装食品", "饮料", "零食"]
+    keywords: ["添加剂", "标签不符", "过敏原"]
+
+  - node_id: dairy
+    parent_id: animal
+    name: 乳制品
+    aliases: ["奶粉", "奶酪", "黄油"]
+    keywords: ["阪崎肠杆菌", "三聚氰胺", "致病菌"]
+
+  - node_id: seafood
+    parent_id: animal
+    name: 水产品
+    aliases: ["鱼", "虾", "贝类"]
+    keywords: ["重金属", "组胺", "副溶血性弧菌"]

@@ -102,7 +102,7 @@ def test_file_system_archive_adapter(tmp_path: Path) -> None:
     archive = FileSystemArchiveAdapter(str(root))
     payload = {"events": [{"id": "e1"}]}
     handle = archive.archive("run-1", "events", "batch", payload)
-    assert (Path(handle.path)).exists()
+    assert (Path(handle.path)).exists()  # type: ignore[arg-type]
     assert archive.retrieve(handle) == payload
 
     listed = archive.list_run_artifacts("run-1")
@@ -160,7 +160,7 @@ def test_orchestrator_runs_all_stages_and_archives(tmp_db_path: str, tmp_path: P
     with UnitOfWork(tmp_db_path) as uow:
         store = PipelineRunStore(uow)
         run = store.get_run(result["run_id"])
-        assert run["status"] == "success"
+        assert run["status"] == "success"  # type: ignore[index]
         assert len(store.list_stage_runs(result["run_id"])) == 2
 
 

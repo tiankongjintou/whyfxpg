@@ -1,0 +1,56 @@
+dimensions:
+  - dimension_id: country
+    name: 国别
+    description: 事件发生国别 / 原产国
+    dimension_type: categorical
+    source_field: country
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: hazard_type
+    name: 危害类型
+    description: 产品缺陷或危害类型
+    dimension_type: categorical
+    source_field: hazard_type
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: severity_level
+    name: 严重度等级
+    description: 伤害严重度等级
+    dimension_type: categorical
+    source_field: severity_level
+    weight: 1.2
+    aggregation: count
+
+  - dimension_id: rs_level
+    name: 风险等级
+    description: S/M/L/A 风险等级
+    dimension_type: categorical
+    source_field: rs_level
+    weight: 1.5
+    aggregation: count
+
+  - dimension_id: total_score
+    name: 风险分
+    description: 风险总分（数值型）
+    dimension_type: numeric
+    source_field: total_score
+    weight: 1.0
+    aggregation: max
+
+  - dimension_id: component_category
+    name: 零部件类别
+    description: 制动 / 轮胎 / 电气 / 动力 / 车身等
+    dimension_type: categorical
+    source_field: component_category
+    weight: 1.2
+    aggregation: count
+
+  - dimension_id: recall_scope
+    name: 召回范围
+    description: 是否涉及官方召回 / 制造商公告
+    dimension_type: categorical
+    source_field: recall_scope
+    weight: 1.4
+    aggregation: count

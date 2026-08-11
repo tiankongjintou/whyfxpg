@@ -1,0 +1,163 @@
+version: "1.0"
+description: "风险事件信息抽取规则"
+updated_at: "2026-07-09"
+updated_by: "system"
+
+rules:
+  - rule_id: "extract_title"
+    name: "标题抽取"
+    applies_to: ["*"]
+    field: "title"
+    method: "selector"
+    selector: "title"
+    required: true
+    fallback: ""
+
+  - rule_id: "extract_publish_date"
+    name: "发布日期抽取"
+    applies_to: ["*"]
+    field: "publish_date"
+    method: "regex"
+    patterns:
+      - "(\\d{4})年(\\d{1,2})月(\\d{1,2})日"
+      - "(\\d{4})-(\\d{2})-(\\d{2})"
+      - "(\\d{4})/(\\d{2})/(\\d{2})"
+      - "(\\d{1,2})\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{4})"
+      - "(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2}),?\\s+(\\d{4})"
+    transform: "parse_date"
+    fallback: null
+
+  - rule_id: "extract_country"
+    name: "原产国抽取"
+    applies_to: ["dpac_recall", "cpsc_recall", "rapex_safety_gate", "opss_recall", "productsafety_australia"]
+    field: "country"
+    method: "regex"
+    patterns:
+      - "原产国[：:]\\s*([^，。；\\s]+)"
+      - "产地[：:]\\s*([^，。；\\s]+)"
+      - "country of origin[：:]\\s*([A-Za-z\\s]+)"
+      - "made in\\s+([A-Za-z\\s]+)"
+      - "from\\s+([A-Za-z\\s]+)"
+    fallback: "unknown"
+
+  - rule_id: "extract_manufacturer"
+    name: "制造商抽取"
+    applies_to: ["*"]
+    field: "manufacturer"
+    method: "regex"
+    patterns:
+      - "制造商[：:]\\s*([^，。；\\s]+)"
+      - "生产单位[：:]\\s*([^，。；\\s]+)"
+      - "Manufacturer[：:]\\s*([A-Za-z0-9\\s&.,'-]+)"
+      - "Brand[：:]\\s*([A-Za-z0-9\\s&.,'-]+)"
+    fallback: "unknown"
+
+  - rule_id: "extract_hazard_type"
+    name: "危害类型分类"
+    applies_to: ["*"]
+    field: "hazard_type"
+    method: "keyword_map"
+    map:
+      电气危险:
+        - 触电
+        - 电击
+        - 漏电
+        - 绝缘
+        - 短路
+        - electric shock
+        - electrocution
+        - insulation
+        - short circuit
+      热危险及火灾危险:
+        - 过热
+        - 火灾
+        - 燃烧
+        - 烫伤
+        - overheating
+        - fire
+        - burn
+        - thermal
+      机械危险:
+        - 夹伤
+        - 割伤
+        - 挤压
+        - 撞击
+        - 断裂
+        - mechanical
+        - entrapment
+        - laceration
+        - crushing
+        - impact
+        - fracture
+      噪声危险:
+        - 噪声
+        - noise
+      振动危险:
+        - 振动
+        - vibration
+      辐射危险:
+        - 辐射
+        - radiation
+      化学危险:
+        - 有害物质
+        - 重金属
+        - 化学品
+        - chemical
+        - heavy metal
+        - hazardous substance
+      组合危险:
+        - 组合
+        - multiple
+        - 综合
+    default: "组合危险"
+
+  - rule_id: "extract_severity_level"
+    name: "严重度等级判定"
+    applies_to: ["*"]
+    field: "severity_level"
+    method: "keyword_map"
+    map:
+      灾难性:
+        - 死亡
+        - 致死
+        - 永久残疾
+        - 重大火灾
+        - 爆炸
+        - death
+        - fatal
+        - permanent disability
+        - explosion
+      严重:
+        - 住院
+        - 截肢
+        - 骨折
+        - 严重伤害
+        - hospitalisation
+        - amputation
+        - fracture
+        - serious injury
+      中等:
+        - 轻伤
+        - 门诊
+        - 擦伤
+        - minor injury
+        - outpatient
+      轻微:
+        - 无伤
+        - 没有受伤
+        - 未造成伤害
+        - no injury
+    default: "中等"
+
+  - rule_id: "extract_standards"
+    name: "涉及标准抽取"
+    applies_to: ["*"]
+    field: "standards"
+    method: "regex"
+    patterns:
+      - "(GB\\s*\\d{4,5}(\\.\\d+)?)"
+      - "(IEC\\s*\\d{4,5}(\\.\\d+)?)"
+      - "(EN\\s*\\d{4,5}(\\.\\d+)?)"
+      - "(UL\\s*\\d{4,5})"
+      - "(CSA\\s*[A-Z]?\\d{4,5})"
+    fallback: ""

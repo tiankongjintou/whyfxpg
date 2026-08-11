@@ -1,0 +1,76 @@
+dashboard_id: default
+name: 海关进口机电产品风险评价大屏
+description: 复刻原有分析大屏的默认模板，所有内容以可配置 widget 形式声明。
+widgets:
+  # Row 0 - KPI cards
+  - widget_id: kpi_total_events
+    type: metric
+    query: summary.total_events
+    title: 事件总数
+    layout: { row: 0, col: 0, col_span: 1 }
+
+  - widget_id: kpi_s_events
+    type: metric
+    query: summary.level_dist.S
+    title: S级别事件
+    layout: { row: 0, col: 1, col_span: 1 }
+
+  - widget_id: kpi_m_events
+    type: metric
+    query: summary.level_dist.M
+    title: M级别事件
+    layout: { row: 0, col: 2, col_span: 1 }
+
+  - widget_id: kpi_pending
+    type: metric
+    query: summary.pending_alerts
+    title: 待复核预警
+    layout: { row: 0, col: 3, col_span: 1 }
+
+  - widget_id: kpi_countries
+    type: metric
+    query: summary.country_count
+    title: 涉及国家
+    layout: { row: 0, col: 4, col_span: 1 }
+
+  # Row 1 - trend + hazard top
+  - widget_id: trend_30d
+    type: line
+    query: trend.days=30
+    title: 近30天事件趋势
+    layout: { row: 1, col: 0, col_span: 1 }
+
+  - widget_id: hazard_top10
+    type: bar
+    query: hazard_distribution.limit=10
+    title: 违规原因TOP10
+    layout: { row: 1, col: 1, col_span: 1 }
+
+  # Row 2 - country summary + level distribution
+  - widget_id: country_summary
+    type: table
+    query: country_summary.limit=20
+    title: 国家/地区风险分布
+    layout: { row: 2, col: 0, col_span: 1 }
+    drill_down:
+      dimension: country
+      target_dashboard: default
+
+  - widget_id: level_dist
+    type: bar
+    query: summary.level_dist
+    title: 风险等级分布
+    layout: { row: 2, col: 1, col_span: 1 }
+
+  # Row 3 - recent high risk (3/5) + alerts (2/5)
+  - widget_id: recent_high_risk
+    type: table
+    query: recent_high_risk.limit=15
+    title: 最新高风险事件
+    layout: { row: 3, col: 0, col_span: 3 }
+
+  - widget_id: alerts
+    type: table
+    query: alerts.limit=10
+    title: 预警信息
+    layout: { row: 3, col: 3, col_span: 2 }

@@ -1,0 +1,13 @@
+rule_pack_id: import_machinery
+domain_id: import_machinery
+name: 进口机电领域规则包
+description: 针对进口机电产品的规则覆盖
+inherits:
+  - base
+rules:
+  - rule_id: country_burst
+    name: 国别事件聚集预警（机电版）
+    enabled: true
+    condition:
+      threshold: 5
+    severity: high

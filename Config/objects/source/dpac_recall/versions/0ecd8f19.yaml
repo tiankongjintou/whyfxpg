@@ -1,0 +1,28 @@
+version_id: 0ecd8f19
+object_type: source
+object_id: dpac_recall
+status: draft
+created_at: '2026-08-04T23:32:44.644354'
+created_by: admin
+published_at: null
+published_by: null
+payload:
+  name: 市场监管总局缺陷产品管理中心召回
+  url: https://dpac.samr.gov.cn/xfpzh/xfzlzh/
+  fallback_url: file:///D:/Seafile/SeaHome/TempProjects/WHYfxpg/whyfxpg/data/samples/dpac_recall_fallback.html
+  source_type: web
+  enabled: true
+  priority: 1.0
+  check_interval: 1d
+  fetch_method: static
+  parser: html_list
+  keywords_ref: default
+  delay: 0.0
+  headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+  selector:
+    list: .list-content .item
+    title: a
+    link: a@href
+    date: .date
+    content: .content

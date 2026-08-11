@@ -1,0 +1,32 @@
+taxonomy_id: import_machinery_hs
+domain_id: import_machinery
+version_id: "1.0"
+nodes:
+  - node_id: root
+    name: 机电产品
+    aliases: ["机械电气", "机电设备"]
+    keywords: ["机电"]
+
+  - node_id: "84"
+    parent_id: root
+    name: 机械器具
+    aliases: ["机械", "机器", "机械设备"]
+    keywords: ["机械危险", "夹伤", "剪切"]
+
+  - node_id: "85"
+    parent_id: root
+    name: 电机电气设备
+    aliases: ["电机", "电气", "电子设备"]
+    keywords: ["电气危险", "电击", "短路"]
+
+  - node_id: "8471"
+    parent_id: "84"
+    name: 自动数据处理设备
+    aliases: ["计算机", "笔记本", "服务器"]
+    keywords: ["过热", "起火"]
+
+  - node_id: "8504"
+    parent_id: "85"
+    name: 变压器、整流器、电感器
+    aliases: ["变压器", "电源适配器"]
+    keywords: ["电击", "过热"]

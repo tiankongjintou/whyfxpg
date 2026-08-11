@@ -1,0 +1,38 @@
+taxonomy_id: import_chemicals_hs
+domain_id: import_chemicals
+version_id: "1.0"
+nodes:
+  - node_id: root
+    name: 化工产品
+    aliases: ["化学品", "化学制品"]
+    keywords: ["化工"]
+
+  - node_id: "28"
+    parent_id: root
+    name: 无机化学品
+    aliases: ["无机化学", "无机化合物"]
+    keywords: ["腐蚀性", "毒性", "重金属"]
+
+  - node_id: "29"
+    parent_id: root
+    name: 有机化学品
+    aliases: ["有机化学", "有机化合物"]
+    keywords: ["易燃", "有毒", "VOC"]
+
+  - node_id: "32"
+    parent_id: root
+    name: 鞣料、染料、颜料
+    aliases: ["染料", "颜料", "涂料"]
+    keywords: ["致敏", "致癌", "禁用染料"]
+
+  - node_id: "35"
+    parent_id: root
+    name: 蛋白类物质、改性淀粉、胶
+    aliases: ["胶黏剂", "淀粉制品"]
+    keywords: ["甲醛", "挥发性有机物"]
+
+  - node_id: "38"
+    parent_id: root
+    name: 杂项化学产品
+    aliases: ["试剂", "催化剂", "添加剂"]
+    keywords: ["爆炸", "反应性", "禁限用物质"]

@@ -1,0 +1,9 @@
+domain_id: import_toys
+name: 进口玩具
+description: 针对进口玩具、儿童用品的物理安全、化学安全与合规风险评估域（HS 第 95 章相关）
+risk_model: risk_model.yaml
+keywords: keywords.yaml
+taxonomy: domains/import_toys/taxonomy.yaml
+dimensions: domains/import_toys/dimensions.yaml
+rule_packs_dir: domains/import_toys/rule_packs
+country_factor_overrides: {}

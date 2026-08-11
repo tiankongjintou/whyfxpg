@@ -1,0 +1,89 @@
+version: "1.0"
+description: "进口机电产品风险预警规则"
+updated_at: "2026-07-09"
+updated_by: "system"
+
+rules:
+  - rule_id: "risk_level_upgrade"
+    name: "风险等级上升预警"
+    enabled: true
+    description: "产品风险等级从A/L上升为M/S"
+    condition:
+      type: "risk_level_change"
+      dimension: "product"
+      from: ["A", "L"]
+      to: ["M", "S"]
+      window: "30d"
+    severity: "high"
+    action: ["dashboard", "report"]
+
+  - rule_id: "country_burst"
+    name: "国别事件聚集预警"
+    enabled: true
+    description: "某国别在最近30天内出现3起及以上事件"
+    condition:
+      type: "count_by_dimension"
+      dimension: "country"
+      window: "30d"
+      threshold: 3
+    severity: "medium"
+    action: ["dashboard", "report"]
+
+  - rule_id: "enterprise_repeat"
+    name: "企业重复不合格预警"
+    enabled: true
+    description: "某企业在最近365天内出现2起及以上事件"
+    condition:
+      type: "count_by_dimension"
+      dimension: "manufacturer"
+      window: "365d"
+      threshold: 2
+    severity: "high"
+    action: ["dashboard", "report"]
+
+  - rule_id: "product_category_surge"
+    name: "产品类别风险激增预警"
+    enabled: true
+    description: "某产品类别事件数环比增长超过100%"
+    condition:
+      type: "month_over_month_growth"
+      dimension: "product_category"
+      growth_rate: 1.0
+    severity: "medium"
+    action: ["dashboard", "report"]
+
+  - rule_id: "new_hazard_type"
+    name: "新危害类型出现预警"
+    enabled: true
+    description: "某产品类别首次出现新的危害类型"
+    condition:
+      type: "novel_pattern"
+      dimension: "hazard_type"
+      group_by: "product_category"
+      lookback: "365d"
+    severity: "low"
+    action: ["dashboard"]
+
+  - rule_id: "high_severity_event"
+    name: "高严重度事件预警"
+    enabled: true
+    description: "出现灾难性或严重等级事件"
+    condition:
+      type: "threshold"
+      dimension: "severity_level"
+      values: ["灾难性", "严重"]
+    severity: "high"
+    action: ["dashboard", "report"]
+
+  - rule_id: "country_risk_upgrade"
+    name: "国别风险等级上升预警"
+    enabled: true
+    description: "某国别高风险事件占比显著上升"
+    condition:
+      type: "risk_level_ratio_change"
+      dimension: "country"
+      level: "S"
+      ratio_threshold: 0.3
+      window: "90d"
+    severity: "high"
+    action: ["dashboard", "report"]

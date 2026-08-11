@@ -1,0 +1,56 @@
+dimensions:
+  - dimension_id: country
+    name: 国别
+    description: 事件发生国别 / 原产国
+    dimension_type: categorical
+    source_field: country
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: hazard_type
+    name: 危害类型
+    description: 产品缺陷或危害类型
+    dimension_type: categorical
+    source_field: hazard_type
+    weight: 1.0
+    aggregation: count
+
+  - dimension_id: severity_level
+    name: 严重度等级
+    description: 伤害严重度等级
+    dimension_type: categorical
+    source_field: severity_level
+    weight: 1.2
+    aggregation: count
+
+  - dimension_id: rs_level
+    name: 风险等级
+    description: S/M/L/A 风险等级
+    dimension_type: categorical
+    source_field: rs_level
+    weight: 1.5
+    aggregation: count
+
+  - dimension_id: total_score
+    name: 风险分
+    description: 风险总分（数值型）
+    dimension_type: numeric
+    source_field: total_score
+    weight: 1.0
+    aggregation: max
+
+  - dimension_id: age_group
+    name: 适用年龄组
+    description: 0-3 / 3-6 / 6-14 岁等年龄分组
+    dimension_type: categorical
+    source_field: age_group
+    weight: 1.3
+    aggregation: count
+
+  - dimension_id: material_type
+    name: 材料类型
+    description: 塑料 / 金属 / 纺织 / 电子 / 木材等
+    dimension_type: categorical
+    source_field: material_type
+    weight: 1.0
+    aggregation: count
