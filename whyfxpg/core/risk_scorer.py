@@ -8,8 +8,9 @@
 - 使用 RiskModelConfig 类型对象替代裸 dict，提供字段级类型提示。
 """
 
+import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from whyfxpg.config.models import RiskModelConfig
@@ -64,7 +65,7 @@ class RiskScorer:
             self._level_score(default_level, 60),
         )
 
-    def probability_to_score(self, event: Dict[str, Any], history_count: int) -> int:
+    def probability_to_score(self, event: dict[str, Any], history_count: int) -> int:
         """基于历史事件密度映射概率等级并返回分数。"""
         # 注意：优先尊重事件本身携带的概率等级（抽取模块提供）
         if event.get("probability_level"):
@@ -99,7 +100,7 @@ class RiskScorer:
         safe_builtins = {"min": min, "max": max}
         try:
             value = eval(formula_str, {"__builtins__": safe_builtins}, {"event_count_12m": event_count_12m})
-        except Exception:
+        except Exception:  # noqa: BLE001 — 公式来自用户配置,eval 异常必须全部兜底
             value = 1.0
         max_val = self._cfg.history_factor.max
         min_val = self._cfg.history_factor.min
@@ -129,14 +130,43 @@ class RiskScorer:
         product_factor: float,
         history_factor: float,
         evidence_factor: float,
+        causal_factor: float = 1.0,
     ) -> float:
-        """计算最终风险分（不含因果因子）。"""
-        return ss * ps * country_factor * product_factor * history_factor * evidence_factor
+        """计算最终风险分（对数域求和，防乘法溢出）。
+
+        公式：``log_score = Σ log(1 + factor)``，其中每个乘法项 f 的对数贡献为
+        ``log(f) = log(1 + (f - 1))``（factor = f - 1 即该系数相对 1 的增量）；
+        ss/ps 作为基准分直接取对数参与求和，最后 ``exp`` 还原。
+        实现上用 ``math.log(f)`` 替代 ``log1p(f - 1)``，数值上更稳定
+        （factor 极小不致舍入崩溃，factor = 0 时对数域自然得 0）。
+
+        数学上与旧公式 ``ss * ps * country * product * history * evidence * causal``
+        等价，但中间过程不经过乘积，极端权重下不会溢出或失真。
+
+        边界：系数 = 1（增量 factor = 0）时 ``log(1+0)=0``，不影响计算；
+        任一系数 ≤ 0（无物理意义）时整体按 0 处理，与旧公式乘以 0 一致。
+        """
+        if ss <= 0 or ps <= 0:
+            return 0.0
+        log_score = math.log(ss) + math.log(ps)
+        for factor in (
+            country_factor,
+            product_factor,
+            history_factor,
+            evidence_factor,
+            causal_factor,
+        ):
+            if factor <= 0.0:
+                return 0.0
+            # log(1 + (factor-1)) = log(factor);直接用 log(factor) 避免 factor≈0
+            # 时 factor-1 舍入为 -1 导致 log1p 崩溃,同时数值更稳定
+            log_score += math.log(factor)
+        return math.exp(log_score)
 
     def score(
         self,
-        event: Dict[str, Any],
-        historical_counts: Dict[str, int],
+        event: dict[str, Any],
+        historical_counts: dict[str, int],
         causal_factor: float,
     ) -> ScoringResult:
         """
@@ -162,9 +192,14 @@ class RiskScorer:
         evidence_factor = self.evidence_factor(event.get("source_id", "unknown"))
 
         total = self.calculate_total_score(
-            ss, ps, country_factor, product_factor, history_factor, evidence_factor
+            ss,
+            ps,
+            country_factor,
+            product_factor,
+            history_factor,
+            evidence_factor,
+            causal_factor,
         )
-        total = total * causal_factor
 
         rs_level = self.map_to_risk_level(total)
 
@@ -195,8 +230,8 @@ class RiskScorer:
 
     @staticmethod
     def assess(
-        event: Dict[str, Any],
-        historical_counts: Dict[str, int],
+        event: dict[str, Any],
+        historical_counts: dict[str, int],
         causal_factor: float = 1.0,
         config_path: str = "Config/risk_model.yaml",
     ) -> "ScoringResult":
