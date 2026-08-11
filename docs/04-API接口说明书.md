@@ -219,7 +219,21 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 | GET | `/api/v1/alerts/{alert_id}` | 需 API Key | 预警详情（P03） |
 | GET | `/api/v1/account/usage` | 需 API Key | 当月累计调用次数（不消耗额度，P04） |
 | GET | `/api/v1/account/quota` | 需 API Key | 额度信息（monthly_limit/used/remaining/qps_limit/reset_at，P04） |
+| POST | `/api/v1/webhooks` | 需 API Key | 注册 Webhook（account_id 下 url 唯一，返回 secret，P05） |
+| GET | `/api/v1/webhooks` | 需 API Key | 当前账户全部 Webhook（P05） |
+| DELETE | `/api/v1/webhooks/{id}` | 需 API Key | 删除 Webhook（P05） |
 | GET | `/docs`、`/redoc`、`/openapi.json` | 公开 | OpenAPI 文档 |
+
+### 1.3 Webhook 通知（P05）
+
+- 触发场景：`new_high_risk_event`、`risk_level_changed`、`alert_triggered`
+  （由业务侧调用 `WebhookService.notify(account_id, event_type, payload)`）。
+- **HMAC-SHA256 签名**：请求头
+  `X-Whyfxpg-Signature: sha256=<hex>` + `X-Whyfxpg-Timestamp`，
+  签名消息 = `timestamp + "\n" + body`（防篡改/防重放）。
+- 投递失败重试最多 3 次（指数退避 2s/4s），记录到 `webhook_delivery_logs`
+  （Alembic 0003：webhooks + delivery_logs 表）。
+- 账户删除时自动清理该账户全部 Webhook。
 
 ### 1.2 计量与限流（P04）
 

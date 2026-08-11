@@ -6,6 +6,7 @@ from whyfxpg_api.routes.companies import router as companies_router
 from whyfxpg_api.routes.events import router as events_router
 from whyfxpg_api.routes.health import router as health_router
 from whyfxpg_api.routes.me import router as me_router
+from whyfxpg_api.routes.webhooks import router as webhooks_router
 
 __all__ = [
     "account_router",
@@ -14,4 +15,5 @@ __all__ = [
     "events_router",
     "health_router",
     "me_router",
+    "webhooks_router",
 ]

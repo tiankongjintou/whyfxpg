@@ -13,6 +13,7 @@ from whyfxpg.ports.account_port import AccountInfo
 from whyfxpg.ports.event_query_port import EventQueryPort
 from whyfxpg.services.account_service import AccountService
 from whyfxpg.services.metering_service import MeteringService
+from whyfxpg.services.webhook_service import WebhookService
 
 
 def get_account_service(request: Request) -> AccountService:
@@ -30,6 +31,12 @@ def get_event_query_port(request: Request) -> EventQueryPort:
 def get_metering_service(request: Request) -> MeteringService:
     """从应用状态取计量服务。"""
     service: MeteringService = request.app.state.metering_service
+    return service
+
+
+def get_webhook_service(request: Request) -> WebhookService:
+    """从应用状态取 Webhook 服务。"""
+    service: WebhookService = request.app.state.webhook_service
     return service
 
 
