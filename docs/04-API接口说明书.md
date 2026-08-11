@@ -219,6 +219,10 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 | GET | `/api/v1/alerts/{alert_id}` | 需 API Key | 预警详情（P03） |
 | GET | `/api/v1/account/usage` | 需 API Key | 当月累计调用次数（不消耗额度，P04） |
 | GET | `/api/v1/account/quota` | 需 API Key | 额度信息（monthly_limit/used/remaining/qps_limit/reset_at，P04） |
+| POST | `/api/v1/accounts` | 公开 + `X-Master-Key` | 注册企业账户，返回 API Key 明文一次（P1b-01） |
+| GET | `/api/v1/accounts/{account_id}` | 需 API Key | 账户详情（租户隔离；master key 可查任意，P1b-01） |
+| POST | `/api/v1/account/api-key/rotate` | 需 API Key | 轮换自身 API Key（旧 key 立即作废，P1b-01） |
+| POST | `/api/v1/account/disable` | 需 API Key | 禁用自身账户（后续请求 403，P1b-01） |
 | POST | `/api/v1/webhooks` | 需 API Key | 注册 Webhook（account_id 下 url 唯一，返回 secret，P05） |
 | GET | `/api/v1/webhooks` | 需 API Key | 当前账户全部 Webhook（P05） |
 | DELETE | `/api/v1/webhooks/{id}` | 需 API Key | 删除 Webhook（P05） |
@@ -267,6 +271,18 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 - 除公开端点（`/health`、`/docs`、`/openapi.json`）外，**所有端点默认要求
   API Key**（`AuthMiddleware`）；认证通过后注入 `request.state.account`。
 - 账户状态非 `active` 或 Key 无效 → 403。
+
+### 2.1 注册接口的 Master Key（P1b-01）
+
+- `POST /api/v1/accounts` 不需要 API Key（新账户尚无 Key），
+  改为要求请求头 `X-Master-Key`，其值来自环境变量 `WHYFXPG_MASTER_KEY`。
+- 未配置该环境变量 → 503（注册接口不可用）；Key 不匹配 → 403。
+- 建议部署时随机生成（如 `openssl rand -hex 32`），install.sh 可纳入 .env。
+
+### 2.2 统一 HTTP 错误格式（P1b-01 补全）
+
+路由内抛出的 `HTTPException`（404/403/422 等）也统一为
+`{"success": false, "error", "request_id"}` 格式（此前仅中间件错误用该格式）。
 
 ### 3. 统一错误格式
 

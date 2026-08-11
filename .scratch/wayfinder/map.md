@@ -99,6 +99,13 @@
    - 清理误写目录 `D:/Seafile/SeaHome/TempProjects/WHHYfxpg`（需显式授权）；
    - 启动下一轮架构审计或 Wayfinder 规划。
 
+## phase1b（2026-08-11 起）
+
+新批次：技术债清理与多租户运营闭环。
+
+- P1b-01 账户管理 API（注册/Key 轮换/禁用）— **in-progress**（reasonix-agent）
+- 待 chart：stores Repository 统一、评分归一化 0-100、配置迁移 PG
+
 ## Notes
 
 - 当前后台 Web UI 进程：`proc_f2a5c187e1b3`（PID 313688），监听 http://localhost:8501。

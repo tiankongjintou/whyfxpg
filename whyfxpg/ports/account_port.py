@@ -34,3 +34,30 @@ class AccountPort(ABC):
             匹配的账户信息；未找到返回 None。
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def create_account(
+        self,
+        company_name: str,
+        plan_type: str,
+        api_key_hash: str,
+        api_key_prefix: str,
+        monthly_quota: int,
+    ) -> AccountInfo:
+        """创建账户（P1b-01）。返回新账户信息。"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def rotate_api_key(self, account_id: str, new_hash: str, new_prefix: str) -> bool:
+        """轮换账户 API Key（P1b-01）。旧 key 哈希被覆盖即作废。"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_account_status(self, account_id: str, status: str) -> bool:
+        """设置账户状态（active/disabled，P1b-01）。"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_account_by_id(self, account_id: str) -> AccountInfo | None:
+        """按 id 查询账户（P1b-01）。"""
+        raise NotImplementedError

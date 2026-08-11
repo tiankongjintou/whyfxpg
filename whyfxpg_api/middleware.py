@@ -20,7 +20,8 @@ from whyfxpg.services.account_service import AccountService, ApiKeyError
 from whyfxpg.services.metering_service import MeteringService, QuotaExceeded
 
 # 公开端点白名单：不要求 API Key
-PUBLIC_PATHS: set[str] = {"/", "/health", "/favicon.ico"}
+# /api/v1/accounts(POST 注册)靠 X-Master-Key 保护,放行给 AuthMiddleware
+PUBLIC_PATHS: set[str] = {"/", "/health", "/favicon.ico", "/api/v1/accounts"}
 PUBLIC_PREFIXES: set[str] = {"/docs", "/redoc", "/openapi.json"}
 
 # 不消耗额度的路径（用量查询不自我消耗）
