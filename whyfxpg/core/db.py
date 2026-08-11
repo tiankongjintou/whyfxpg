@@ -10,17 +10,38 @@
 输出：SQLite 数据库文件 whyfxpg.db
 """
 
+import os
 import sqlite3
 from pathlib import Path
-from typing import Optional
 
 from whyfxpg.migrations import MigrationRunner
 
 # 默认数据库路径
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "whyfxpg.db"
 
+# 环境变量名：与路线图 §7.1 docker-compose 约定一致
+DATABASE_URL_ENV = "DATABASE_URL"
 
-def get_db_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
+
+def get_database_url() -> str:
+    """返回当前数据库 URL（P01 双 DB 切换入口）。
+
+    优先读 ``DATABASE_URL`` 环境变量（PostgreSQL 形如
+    ``postgresql://user:pass@host:5432/whyfxpg``）；未设置时回退到
+    Phase 0 的默认 SQLite 路径，保证 whyfxpg 包可独立运行（不依赖 PostgreSQL）。
+    """
+    url = os.environ.get(DATABASE_URL_ENV)
+    if url and url.strip():
+        return url.strip()
+    return str(DEFAULT_DB_PATH)
+
+
+def is_postgres_url(url: str) -> bool:
+    """判断 URL 是否为 PostgreSQL 连接串。"""
+    return url.startswith(("postgresql://", "postgres://"))
+
+
+def get_db_connection(db_path: str | None = None) -> sqlite3.Connection:
     """创建并返回一个 sqlite3 连接，启用 row_factory 与 busy_timeout。"""
     path = db_path or str(DEFAULT_DB_PATH)
     conn = sqlite3.connect(path)
@@ -29,7 +50,7 @@ def get_db_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     return conn
 
 
-def init_db(db_path: Optional[str] = None) -> None:
+def init_db(db_path: str | None = None) -> None:
     """
     初始化数据库 schema（兼容 shim）。
 

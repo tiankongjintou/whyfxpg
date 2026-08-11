@@ -51,6 +51,11 @@ llm = [
     "openai>=1.0.0",
     "anthropic>=0.5.0",
 ]
+pg = [
+    "alembic>=1.13",
+    "psycopg2-binary>=2.9",
+    "sqlalchemy>=2.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/whyfxpg/whyfxpg"
