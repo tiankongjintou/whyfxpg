@@ -17,22 +17,34 @@ from fastapi.responses import JSONResponse
 
 from whyfxpg.adapters.accounts.in_memory_account_adapter import InMemoryAccountAdapter
 from whyfxpg.adapters.accounts.pg_account_adapter import PgAccountAdapter
+from whyfxpg.adapters.events.in_memory_event_query_adapter import (
+    InMemoryEventQueryAdapter,
+)
+from whyfxpg.adapters.events.pg_event_query_adapter import PgEventQueryAdapter
 from whyfxpg.ports.account_port import AccountPort
+from whyfxpg.ports.event_query_port import EventQueryPort
 from whyfxpg.services.account_service import AccountService
 from whyfxpg_api import __version__
 from whyfxpg_api.middleware import AuthMiddleware, RequestIDMiddleware
-from whyfxpg_api.routes import health_router, me_router
+from whyfxpg_api.routes import (
+    alerts_router,
+    companies_router,
+    events_router,
+    health_router,
+    me_router,
+)
 
 
 def create_app(
     account_port: AccountPort | None = None,
     account_service: AccountService | None = None,
+    event_query_port: EventQueryPort | None = None,
 ) -> FastAPI:
-    """应用工厂：默认按 DATABASE_URL 选择账户存储。
+    """应用工厂：默认按 DATABASE_URL 选择账户/事件存储。
 
-    - DATABASE_URL 为 PostgreSQL → PgAccountAdapter（生产）
-    - 未设置 / 非 PG（本地开发、测试）→ InMemoryAccountAdapter（空账户，
-      认证一律 403，避免无 PG 环境启动失败）
+    - DATABASE_URL 为 PostgreSQL → Pg adapter（生产）
+    - 未设置 / 非 PG（本地开发、测试）→ InMemory adapter（空数据，
+      避免无 PG 环境启动失败）
     """
     app = FastAPI(
         title="WHYFXPG API",
@@ -41,24 +53,28 @@ def create_app(
         openapi_tags=[
             {"name": "system", "description": "系统级端点（健康检查）"},
             {"name": "accounts", "description": "账户与认证"},
+            {"name": "events", "description": "风险事件查询与评分"},
+            {"name": "alerts", "description": "预警"},
         ],
     )
 
-    if account_port is None:
-        from whyfxpg.core.db import get_database_url, is_postgres_url
+    from whyfxpg.core.db import get_database_url, is_postgres_url
 
-        db_url = get_database_url()
-        if is_postgres_url(db_url):
-            account_port = PgAccountAdapter(db_url)
-        else:
-            account_port = InMemoryAccountAdapter()
-            import warnings
+    db_url = get_database_url()
+    if is_postgres_url(db_url):
+        account_port = account_port or PgAccountAdapter(db_url)
+        event_query_port = event_query_port or PgEventQueryAdapter(db_url)
+    else:
+        account_port = account_port or InMemoryAccountAdapter()
+        event_query_port = event_query_port or InMemoryEventQueryAdapter()
+        import warnings
 
-            warnings.warn(
-                "DATABASE_URL 未指向 PostgreSQL，使用空 InMemory 账户存储（仅本地/测试）"
-            )
+        warnings.warn(
+            "DATABASE_URL 未指向 PostgreSQL，使用空 InMemory 存储（仅本地/测试）"
+        )
     service = account_service or AccountService(account_port)
     app.state.account_service = service
+    app.state.event_query_port = event_query_port
 
     # 注意顺序:后 add 的在外层。RequestID 最外层保证所有响应(含 Auth 403)
     # 都带 X-Request-ID 头,且 Auth 中间件能读到 request.state.request_id。
@@ -67,6 +83,9 @@ def create_app(
 
     app.include_router(health_router)
     app.include_router(me_router)
+    app.include_router(events_router)
+    app.include_router(alerts_router)
+    app.include_router(companies_router)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_handler(request, exc: RequestValidationError) -> JSONResponse:

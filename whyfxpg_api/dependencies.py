@@ -1,7 +1,8 @@
-"""依赖注入（P02）。
+"""依赖注入（P02/P03）。
 
 - ``get_current_account``：从 ``request.state.account`` 取当前账户
   （由 AuthMiddleware 注入；直接调用时若未认证则抛 403）。
+- ``get_event_query_port``：取事件/预警查询端口（create_app 注入）。
 """
 
 from typing import Any
@@ -9,6 +10,7 @@ from typing import Any
 from fastapi import HTTPException, Request
 
 from whyfxpg.ports.account_port import AccountInfo
+from whyfxpg.ports.event_query_port import EventQueryPort
 from whyfxpg.services.account_service import AccountService
 
 
@@ -16,6 +18,12 @@ def get_account_service(request: Request) -> AccountService:
     """从应用状态取 AccountService。"""
     service: AccountService = request.app.state.account_service
     return service
+
+
+def get_event_query_port(request: Request) -> EventQueryPort:
+    """从应用状态取事件查询端口。"""
+    port: EventQueryPort = request.app.state.event_query_port
+    return port
 
 
 def get_current_account(request: Request) -> AccountInfo:

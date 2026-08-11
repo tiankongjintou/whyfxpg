@@ -210,7 +210,23 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 |------|------|------|------|
 | GET | `/health` | 公开 | 健康检查，返回 `{"status": "ok", "service": "whyfxpg-api", "version": "..."}` |
 | GET | `/api/v1/me` | 需 API Key | 当前账户信息（account_id/company_name/plan_type/monthly_quota/status） |
+| GET | `/api/v1/events` | 需 API Key | 分页查询风险事件（page/per_page + manufacturer/country/hazard_type 筛选，P03） |
+| GET | `/api/v1/events/{event_id}` | 需 API Key | 事件详情（P03） |
+| POST | `/api/v1/events/assess` | 需 API Key | 实时评分，返回总分/等级/breakdown（P03） |
+| POST | `/api/v1/events/batch-assess` | 需 API Key | 批量评分 ≤100 条（P03） |
+| GET | `/api/v1/companies/{name}/profile` | 需 API Key | 企业风险画像（事件数/均分/等级分布/最近事件，P03） |
+| GET | `/api/v1/alerts` | 需 API Key | 预警列表（分页 + status 筛选，P03） |
+| GET | `/api/v1/alerts/{alert_id}` | 需 API Key | 预警详情（P03） |
 | GET | `/docs`、`/redoc`、`/openapi.json` | 公开 | OpenAPI 文档 |
+
+### 1.1 统一成功响应格式（P03）
+
+```json
+{"success": true, "data": {...}, "meta": {"request_id": "...", "quota_used": 0, "quota_remaining": null}, "error": null}
+```
+
+- 分页响应：`data` 含 `items` / `total` / `page` / `per_page`。
+- 所有查询端点按当前账户 `account_id` 过滤（**租户隔离**）。
 
 ### 2. 认证规范（多租户 API Key）
 
