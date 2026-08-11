@@ -18,8 +18,8 @@ from whyfxpg.core.information_pipeline import (
     StageArtifact,
     StageStatus,
 )
-from whyfxpg.core.pipeline_store import AuditLogStore, PipelineRunStore
 from whyfxpg.core.stores import UnitOfWork
+from whyfxpg.core.stores.archive_store import AuditLogStore, PipelineRunStore
 from whyfxpg.ports.archive import ArchiveHandle, ArchivePort
 from whyfxpg.ports.telemetry import TelemetryPort
 from whyfxpg.services.notification_service import NotificationService

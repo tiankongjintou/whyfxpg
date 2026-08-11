@@ -18,9 +18,9 @@ from typing import Any
 from whyfxpg.adapters.config.file_config_store import FileConfigStoreAdapter
 from whyfxpg.core.config_loader import DEFAULT_CONFIG_DIR
 from whyfxpg.core.feedback_learner import FeedbackLearner
-from whyfxpg.core.pipeline_store import AuditLogStore
 from whyfxpg.core.risk_evaluation_runner import RiskEvaluationRunner
 from whyfxpg.core.stores import UnitOfWork
+from whyfxpg.core.stores.archive_store import AuditLogStore
 from whyfxpg.services.admin.configuration_admin_service import (
     ConfigurationAdminService,
 )

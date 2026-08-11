@@ -14,7 +14,7 @@ from whyfxpg.core.information_pipeline import (
     PipelineStage,
     StageStatus,
 )
-from whyfxpg.core.pipeline_store import AuditLogStore, PipelineRunStore
+from whyfxpg.core.stores.archive_store import AuditLogStore, PipelineRunStore
 from whyfxpg.migrations import MigrationRunner
 from whyfxpg.ports.archive import ArchiveHandle
 from whyfxpg.services.feedback_learning_service import FeedbackLearningService
