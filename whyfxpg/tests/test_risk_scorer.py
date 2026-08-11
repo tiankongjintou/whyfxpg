@@ -9,7 +9,7 @@ import math
 
 import pytest
 
-from whyfxpg.config.models import RiskModelConfig
+from whyfxpg.config.pydantic_models import RiskModelConfig
 from whyfxpg.core.risk_scorer import RiskScorer, ScoringResult
 
 

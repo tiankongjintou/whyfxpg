@@ -10,10 +10,11 @@
 
 import math
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from whyfxpg.config.models import RiskModelConfig
+    from whyfxpg.config.pydantic_models import RiskModelConfig
 
 
 @dataclass(frozen=True)
@@ -269,11 +270,8 @@ class RiskScorer:
         Returns:
             ScoringResult: 包含 ss_score, ps_score, total_score, rs_level 等字段
         """
-        import yaml
+        from whyfxpg.config.pydantic_loader import load_risk_model
 
-        from whyfxpg.config.models import RiskModelConfig
-
-        with open(config_path, encoding="utf-8") as f:
-            cfg = RiskModelConfig.from_dict(yaml.safe_load(f))
+        cfg = load_risk_model(Path(config_path))
         scorer = RiskScorer(cfg)
         return scorer.score(event, historical_counts, causal_factor)
