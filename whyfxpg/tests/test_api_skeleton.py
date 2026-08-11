@@ -70,9 +70,11 @@ def test_protected_endpoint_accepts_valid_key(client: TestClient) -> None:
     resp = client.get("/api/v1/me", headers={"X-API-Key": TEST_API_KEY})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["account_id"] == "acct-1"
-    assert body["company_name"] == "测试企业"
-    assert body["plan_type"] == "pro"
+    assert body["success"] is True
+    data = body["data"]
+    assert data["account_id"] == "acct-1"
+    assert data["company_name"] == "测试企业"
+    assert data["plan_type"] == "pro"
     # 敏感字段不暴露
     assert "api_key_hash" not in body
 

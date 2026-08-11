@@ -21,12 +21,19 @@ from whyfxpg.adapters.events.in_memory_event_query_adapter import (
     InMemoryEventQueryAdapter,
 )
 from whyfxpg.adapters.events.pg_event_query_adapter import PgEventQueryAdapter
+from whyfxpg.adapters.metering.in_memory_metering_adapter import InMemoryMeteringAdapter
 from whyfxpg.ports.account_port import AccountPort
 from whyfxpg.ports.event_query_port import EventQueryPort
 from whyfxpg.services.account_service import AccountService
+from whyfxpg.services.metering_service import MeteringService
 from whyfxpg_api import __version__
-from whyfxpg_api.middleware import AuthMiddleware, RequestIDMiddleware
+from whyfxpg_api.middleware import (
+    AuthMiddleware,
+    MeteringMiddleware,
+    RequestIDMiddleware,
+)
 from whyfxpg_api.routes import (
+    account_router,
     alerts_router,
     companies_router,
     events_router,
@@ -39,6 +46,7 @@ def create_app(
     account_port: AccountPort | None = None,
     account_service: AccountService | None = None,
     event_query_port: EventQueryPort | None = None,
+    metering_service: MeteringService | None = None,
 ) -> FastAPI:
     """应用工厂：默认按 DATABASE_URL 选择账户/事件存储。
 
@@ -75,9 +83,12 @@ def create_app(
     service = account_service or AccountService(account_port)
     app.state.account_service = service
     app.state.event_query_port = event_query_port
+    metering = metering_service or MeteringService(InMemoryMeteringAdapter())
+    app.state.metering_service = metering
 
-    # 注意顺序:后 add 的在外层。RequestID 最外层保证所有响应(含 Auth 403)
-    # 都带 X-Request-ID 头,且 Auth 中间件能读到 request.state.request_id。
+    # 注意顺序:后 add 的在外层。RequestID 最外层保证所有响应(含 403/429)
+    # 都带 X-Request-ID 头;Auth 在 Metering 外层(先认证再计量)。
+    app.add_middleware(MeteringMiddleware, metering_service=metering)
     app.add_middleware(AuthMiddleware, account_service=service)
     app.add_middleware(RequestIDMiddleware)
 
@@ -86,6 +97,7 @@ def create_app(
     app.include_router(events_router)
     app.include_router(alerts_router)
     app.include_router(companies_router)
+    app.include_router(account_router)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_handler(request, exc: RequestValidationError) -> JSONResponse:

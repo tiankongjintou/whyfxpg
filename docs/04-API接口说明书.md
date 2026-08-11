@@ -217,7 +217,24 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 | GET | `/api/v1/companies/{name}/profile` | 需 API Key | 企业风险画像（事件数/均分/等级分布/最近事件，P03） |
 | GET | `/api/v1/alerts` | 需 API Key | 预警列表（分页 + status 筛选，P03） |
 | GET | `/api/v1/alerts/{alert_id}` | 需 API Key | 预警详情（P03） |
+| GET | `/api/v1/account/usage` | 需 API Key | 当月累计调用次数（不消耗额度，P04） |
+| GET | `/api/v1/account/quota` | 需 API Key | 额度信息（monthly_limit/used/remaining/qps_limit/reset_at，P04） |
 | GET | `/docs`、`/redoc`、`/openapi.json` | 公开 | OpenAPI 文档 |
+
+### 1.2 计量与限流（P04）
+
+| plan_type | 月度限额 | QPS |
+|-----------|---------|-----|
+| trial     | 100     | 1   |
+| basic     | 5,000   | 5   |
+| pro       | 50,000  | 20  |
+| enterprise| ∞       | ∞   |
+
+- 每次受保护调用经 `MeteringMiddleware` 扣减额度（月度 + QPS），
+  超额返回 **429** 统一错误格式。
+- 成功响应 `meta` 注入 `quota_used` / `quota_remaining`。
+- 用量查询端点（`/account/usage`、`/account/quota`）不消耗额度。
+- 生产用 `RedisMeteringAdapter`（INCR + EXPIRE），测试/本地用 InMemory。
 
 ### 1.1 统一成功响应格式（P03）
 

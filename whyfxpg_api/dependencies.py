@@ -12,6 +12,7 @@ from fastapi import HTTPException, Request
 from whyfxpg.ports.account_port import AccountInfo
 from whyfxpg.ports.event_query_port import EventQueryPort
 from whyfxpg.services.account_service import AccountService
+from whyfxpg.services.metering_service import MeteringService
 
 
 def get_account_service(request: Request) -> AccountService:
@@ -24,6 +25,12 @@ def get_event_query_port(request: Request) -> EventQueryPort:
     """从应用状态取事件查询端口。"""
     port: EventQueryPort = request.app.state.event_query_port
     return port
+
+
+def get_metering_service(request: Request) -> MeteringService:
+    """从应用状态取计量服务。"""
+    service: MeteringService = request.app.state.metering_service
+    return service
 
 
 def get_current_account(request: Request) -> AccountInfo:
