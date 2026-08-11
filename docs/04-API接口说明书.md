@@ -1,12 +1,15 @@
 # API接口说明书
 
-> 基于 2026-08-05 代码审计
+> 基于 2026-08-05 代码审计；Phase 1（P02 起）新增 FastAPI REST API
 
 ## 一、系统架构说明
 
-**本系统无 REST API，所有功能通过 Web UI 页面操作。**
-
-WHYFXPG 是一个基于 Streamlit 的纯 Web 应用，所有业务功能通过浏览器交互完成，不对外提供 HTTP REST 接口。
+- **Phase 0（现状）**：无 REST API，所有功能通过 Streamlit Web UI 页面操作。
+- **Phase 1（P02 起）**：引入 **FastAPI REST API**（`whyfxpg_api/` 包），
+  与 Web UI 并存。API 面向企业客户（多租户 API Key 认证），
+  Web UI 面向内部运营。
+- REST API 端点、认证规范与错误格式见文末附录
+  「Phase 1 REST API（FastAPI）」。
 
 ---
 
@@ -193,3 +196,53 @@ GET  /api/v1/causal/chains/{event_id}  # 查询事件的因果链
 ```
 
 > ⚠️ 以上接口设计为待实现状态，当前版本不支持 REST API 访问。
+
+---
+
+## 附录：Phase 1 REST API（FastAPI，P02）
+
+> 包：`whyfxpg_api/`（`uvicorn whyfxpg_api.main:app --reload` 启动）
+> OpenAPI 3.0：启动后访问 `/docs`（Swagger UI）自动生成。
+
+### 1. 端点
+
+| 方法 | 路径 | 认证 | 说明 |
+|------|------|------|------|
+| GET | `/health` | 公开 | 健康检查，返回 `{"status": "ok", "service": "whyfxpg-api", "version": "..."}` |
+| GET | `/api/v1/me` | 需 API Key | 当前账户信息（account_id/company_name/plan_type/monthly_quota/status） |
+| GET | `/docs`、`/redoc`、`/openapi.json` | 公开 | OpenAPI 文档 |
+
+### 2. 认证规范（多租户 API Key）
+
+- 请求头 `X-API-Key: <api_key>`（明文 Key）。
+- 服务端对 Key 做 **sha256 哈希**后与 `accounts.api_key_hash` 比对
+  （P01 的 accounts 表，经 `AccountPort` → `PgAccountAdapter` 查询）。
+- 除公开端点（`/health`、`/docs`、`/openapi.json`）外，**所有端点默认要求
+  API Key**（`AuthMiddleware`）；认证通过后注入 `request.state.account`。
+- 账户状态非 `active` 或 Key 无效 → 403。
+
+### 3. 统一错误格式
+
+```json
+{"success": false, "error": "错误描述", "request_id": "请求ID"}
+```
+
+- `request_id` 由中间件生成（缺失时），响应头 `X-Request-ID` 与之对应，
+  便于日志追踪。
+- 参数校验错误（422）同样使用该格式。
+
+### 4. 目录结构（P02）
+
+```
+whyfxpg_api/
+├── main.py          # create_app() 应用工厂 + OpenAPI 配置
+├── dependencies.py  # get_current_account / get_account_service
+├── middleware.py    # RequestIDMiddleware + AuthMiddleware
+├── routes/          # health.py（公开）、me.py（受保护）
+├── models/          # 内部模型
+└── schemas/         # AccountOut / ErrorResponse
+```
+
+配套服务：`whyfxpg/services/account_service.py`（Key 哈希 + 校验）、
+`whyfxpg/ports/account_port.py`（Port）、
+`whyfxpg/adapters/accounts/`（Pg / InMemory 双适配器）。
