@@ -103,8 +103,10 @@
 
 新批次：技术债清理与多租户运营闭环。
 
-- P1b-01 账户管理 API（注册/Key 轮换/禁用）— **in-progress**（reasonix-agent）
-- 待 chart：stores Repository 统一、评分归一化 0-100、配置迁移 PG
+- P1b-01 账户管理 API（注册/Key 轮换/禁用）— ✅ completed（commit 2048896）
+- P1b-02 stores 清理（pipeline_store 兼容层去重）— ✅ completed（commit 799542b）
+- P1b-03 评分归一化 0-100（§6.1-3）— ✅ completed（commit 68c0d19）
+- P1b-04 配置迁移 PG（§6.3-2）— **in-progress**（reasonix-agent）
 
 ## Notes
 
