@@ -20,10 +20,11 @@ def test_calculate_total_score(initialized_db: str, temp_config_dir: str) -> Non
 
 def test_map_to_risk_level(initialized_db: str, temp_config_dir: str) -> None:
     model = RiskModel(temp_config_dir, initialized_db)
-    assert model.map_to_risk_level(9000) == "S"
-    assert model.map_to_risk_level(5000) == "M"
-    assert model.map_to_risk_level(1500) == "L"
-    assert model.map_to_risk_level(500) == "A"
+    # P1b-03：输入为 0-100 归一化分（阈值 S≥85/M≥70/L≥50）
+    assert model.map_to_risk_level(90) == "S"
+    assert model.map_to_risk_level(75) == "M"
+    assert model.map_to_risk_level(60) == "L"
+    assert model.map_to_risk_level(40) == "A"
 
 
 def test_evaluate_event(initialized_db: str, temp_config_dir: str) -> None:

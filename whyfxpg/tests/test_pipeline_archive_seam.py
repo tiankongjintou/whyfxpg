@@ -344,7 +344,7 @@ def test_feedback_learning_service_updates_config_and_audits(
         "probability_levels": {"可能": {"score": 80}},
         "history_factor": {"formula": "1", "max": 1.0, "min": 1.0},
         "evidence_factors": {"unknown": 1.0},
-        "risk_level_thresholds": {"S": 8000, "M": 3000, "L": 1000, "A": 0},
+        "risk_level_thresholds": {"S": 85, "M": 70, "L": 50, "A": 0},
     }
     (cfg_dir / "risk_model.yaml").write_text(yaml.safe_dump(risk_model), encoding="utf-8")
 

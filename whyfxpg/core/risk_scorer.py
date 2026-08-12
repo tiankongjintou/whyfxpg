@@ -30,6 +30,7 @@ class ScoringResult:
     evidence_factor: float
     causal_factor: float
     total_score: float
+    normalized_score: float
     rs_level: str
 
 
@@ -111,17 +112,37 @@ class RiskScorer:
         """证据来源修正系数。"""
         return self._cfg.evidence_factors.get(source_id, self._cfg.evidence_factors.get("unknown", 0.9))
 
-    def map_to_risk_level(self, total_score: float) -> str:
-        """根据阈值映射风险等级。"""
+    def map_to_risk_level(self, normalized_score: float) -> str:
+        """根据阈值映射风险等级（P1b-03：输入为 0-100 归一化分）。
+
+        阈值 `risk_level_thresholds`（S≥85/M≥70/L≥50）语义对齐 0-100 量纲；
+        归一化前 0-10000+ 量纲直接套用会造成轻微事件误判高危（P0-1 遗留，
+        见 test_t1_lock_fix 历史）。
+        """
         thresholds = self._cfg.risk_level_thresholds
-        if total_score >= thresholds.get("S", 8000):
+        if normalized_score >= thresholds.get("S", 85):
             return "S"
-        elif total_score >= thresholds.get("M", 3000):
+        elif normalized_score >= thresholds.get("M", 70):
             return "M"
-        elif total_score >= thresholds.get("L", 1000):
+        elif normalized_score >= thresholds.get("L", 50):
             return "L"
         else:
             return "A"
+
+    def normalize_score(self, total_score: float) -> float:
+        """把 0-10000+ 对数化总分单调映射到 0-100（P1b-03，§6.1-3）。
+
+        公式：``100 * total / (total + C)``，C 为归一化常数（默认 3000，
+        可经模型配置 ``normalization_constant`` 覆盖）。
+
+        - total=0 → 0；total→∞ → 100（渐近，永不超过 100）
+        - C=3000 时典型分布：轻微×可能(≈1425)→32、中×可能(≈5700)→65、
+          严重×可能(≈9025)→75、严重×可能×因果2(≈17885)→86
+        """
+        c = float(getattr(self._cfg, "normalization_constant", 3000) or 3000)
+        if total_score <= 0 or c <= 0:
+            return 0.0
+        return 100.0 * total_score / (total_score + c)
 
     def calculate_total_score(
         self,
@@ -202,7 +223,7 @@ class RiskScorer:
             causal_factor,
         )
 
-        rs_level = self.map_to_risk_level(total)
+        rs_level = self.map_to_risk_level(self.normalize_score(total))
 
         return ScoringResult(
             ss_score=ss,
@@ -214,6 +235,7 @@ class RiskScorer:
             evidence_factor=evidence_factor,
             causal_factor=causal_factor,
             total_score=round(total, 2),
+            normalized_score=round(self.normalize_score(total), 2),
             rs_level=rs_level,
         )
 

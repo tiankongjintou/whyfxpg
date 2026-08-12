@@ -34,7 +34,7 @@ def model_cfg() -> RiskModelConfig:
             "product_factors": {"unknown": 1.0, "普通机电": 1.0, "儿童相关产品": 1.3},
             "history_factor": {"formula": "1 + 0.1 * min(event_count_12m, 5)", "max": 1.5, "min": 1.0},
             "evidence_factors": {"test_api": 1.0, "news": 0.9, "unknown": 0.9},
-            "risk_level_thresholds": {"S": 8000, "M": 3000, "L": 1000, "A": 0},
+            "risk_level_thresholds": {"S": 85, "M": 70, "L": 50, "A": 0},
         }
     )
 
@@ -81,10 +81,23 @@ def test_evidence_factor_lookup(scorer: RiskScorer) -> None:
 
 
 def test_map_to_risk_level_thresholds(scorer: RiskScorer) -> None:
-    assert scorer.map_to_risk_level(9000) == "S"
-    assert scorer.map_to_risk_level(5000) == "M"
-    assert scorer.map_to_risk_level(1500) == "L"
-    assert scorer.map_to_risk_level(500) == "A"
+    # P1b-03：map_to_risk_level 输入为 0-100 归一化分（阈值 S≥85/M≥70/L≥50）
+    assert scorer.map_to_risk_level(90) == "S"
+    assert scorer.map_to_risk_level(75) == "M"
+    assert scorer.map_to_risk_level(60) == "L"
+    assert scorer.map_to_risk_level(40) == "A"
+
+
+def test_normalize_score_range(scorer: RiskScorer) -> None:
+    """归一化单调映射：0→0，正分严格递增，渐近 <100（P1b-03）。"""
+    assert scorer.normalize_score(0) == 0.0
+    assert scorer.normalize_score(-5) == 0.0
+    assert 0 < scorer.normalize_score(1425) < 100
+    assert scorer.normalize_score(5700) > scorer.normalize_score(1425)
+    assert scorer.normalize_score(1e9) < 100
+    # C=3000 默认：轻微×可能(≈1425)→~32，严重×可能×因果2(≈17885)→~86
+    assert scorer.normalize_score(1425) == pytest.approx(32.2, abs=0.1)
+    assert scorer.normalize_score(17885) == pytest.approx(85.6, abs=0.1)
 
 
 def test_score_computes_total_and_risk_level(scorer: RiskScorer) -> None:
@@ -109,7 +122,9 @@ def test_score_computes_total_and_risk_level(scorer: RiskScorer) -> None:
     assert result.evidence_factor == 1.0
     assert result.causal_factor == 1.0
     assert result.total_score == pytest.approx(60 * 95 * 1.0 * 1.0 * 1.0 * 1.0)
-    assert result.rs_level == "M"
+    # P1b-03:5700 → 归一化 65.5 → L 级(0-100 量纲,旧 8000/3000/1000 语义下为 M)
+    assert result.normalized_score == pytest.approx(65.5, abs=0.1)
+    assert result.rs_level == "L"
     assert result.probability_level == "可能"
 
 

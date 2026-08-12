@@ -168,8 +168,9 @@ def test_risk_model_run_does_not_open_second_connection(tmp_path: Path) -> None:
     )
     row = cursor.fetchone()
     assert row is not None
-    # P0-1 后阈值 S≥85/M≥70/L≥50:轻微(15)×可能(95)=1425 → S 级
-    assert row["rs_level"] == "S"
+    # P1b-03 归一化后:轻微(15)×可能(95)=1425 → 归一化 32.2(<50)→ A 级
+    # (归一化前 1425≥85 误判 S 级,TD03 曾将断言改为 S 适配错误行为)
+    assert row["rs_level"] == "A"
     assert row["config_version"] == "1.0"
     other.close()
     conn.close()

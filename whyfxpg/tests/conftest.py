@@ -63,7 +63,7 @@ def temp_config_dir(tmp_path: Path) -> str:
         "product_factors": {"unknown": 1.0, "普通机电": 1.0},
         "history_factor": {"formula": "1 + 0.1 * min(event_count_12m, 5)", "max": 1.5, "min": 1.0},
         "evidence_factors": {"test_api": 1.0, "unknown": 0.9},
-        "risk_level_thresholds": {"S": 8000, "M": 3000, "L": 1000, "A": 0},
+        "risk_level_thresholds": {"S": 85, "M": 70, "L": 50, "A": 0},
     }
 
     extract_rules = {

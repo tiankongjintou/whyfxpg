@@ -89,7 +89,7 @@ def temp_config_with_domains(tmp_path: Path) -> Path:
             "product_factors": {"机电": 1.0},
             "history_factor": {"formula": "1", "max": 1.0, "min": 1.0},
             "evidence_factors": {"default": 1.0},
-            "risk_level_thresholds": {"S": 8000, "M": 3000, "L": 1000, "A": 0},
+            "risk_level_thresholds": {"S": 85, "M": 70, "L": 50, "A": 0},
         },
     )
     _write_yaml(

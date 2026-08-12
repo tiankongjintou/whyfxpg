@@ -233,7 +233,8 @@ def test_v2_end_to_end_pipeline(
         assert hazard_type == "电气危险"
         assert severity_level == "严重"
         assert total_score >= 8000
-        assert rs_level == "S"
+        # P1b-03:严重(95)×可能(95)=9025 → 归一化 75.1 → M 级(0-100 量纲)
+        assert rs_level == "M"
     finally:
         conn.close()
 
