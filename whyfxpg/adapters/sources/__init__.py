@@ -15,6 +15,7 @@ from .korea_safety_adapter import KoreaSafetyAdapter
 from .mexico_profeco_adapter import MexicoPROFECOAdapter
 from .new_zealand_mvc_adapter import NewZealandMVCAdapter
 from .saudi_sfda_adapter import SaudiSFDAAdapter
+from .russia_ros_accreditation_adapter import RussiaRosAccreditationAdapter
 from .singapore_cpss_adapter import SingaporeCPSSAdapter
 
 # 注册内置适配器（确保注册表非空）
