@@ -10,6 +10,7 @@
 
 import math
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -29,6 +30,7 @@ class ScoringResult:
     history_factor: float
     evidence_factor: float
     causal_factor: float
+    recency_decay: float
     total_score: float
     normalized_score: float
     rs_level: str
@@ -112,6 +114,60 @@ class RiskScorer:
         """证据来源修正系数。"""
         return self._cfg.evidence_factors.get(source_id, self._cfg.evidence_factors.get("unknown", 0.9))
 
+    def recency_decay_factor(self, publish_date: str | None) -> float:
+        """时效衰减因子（P1b-05）。
+
+        基于事件发布时间计算衰减系数，越近的事件权重越高：
+
+        ``decay_factor = exp(-ln(2) * days_since_publish / half_life_days)``
+
+        - 当天事件：days_since_publish=0 → decay_factor=1.0
+        - 半衰期当天：days_since_publish=half_life_days → decay_factor=0.5
+        - 超出窗口：decay_factor→0
+
+        配置通过 ``risk_model.yaml`` 中的 ``recency_decay`` 节：
+        - ``half_life_days``：半衰期天数（默认 90 天）
+        - ``window_days``：评分窗口天数（超过则 decay≈0，可设 0 禁用）
+        - ``enabled``：是否启用（默认 true）
+
+        若 ``publish_date`` 为空、解析失败或窗口外，返回 1.0（无衰减）。
+        """
+        recency_cfg = getattr(self._cfg, "recency_decay", None)
+        if recency_cfg is None:
+            # recency_decay not configured → decay disabled
+            return 1.0
+
+        enabled = getattr(recency_cfg, "enabled", True)
+        if not enabled:
+            return 1.0
+
+        half_life = getattr(recency_cfg, "half_life_days", 90)
+        window_days = getattr(recency_cfg, "window_days", 0)
+
+        if half_life <= 0:
+            return 1.0
+
+        if publish_date is None:
+            return 1.0
+
+        try:
+            # 支持 YYYY-MM-DD 和 YYYY-MM-DDTHH:MM:SS 格式
+            pub = datetime.fromisoformat(publish_date.replace("Z", "+00:00").split("+")[0])
+            now = datetime.now()  # noqa: DTZ005
+            days_since = (now - pub).total_seconds() / 86400.0
+        except Exception:  # noqa: BLE001
+            return 1.0
+
+        # 超出时间窗口的事件（window_days=0 表示不限制）
+        if window_days > 0 and days_since > window_days:
+            return 1.0
+
+        if days_since < 0:
+            days_since = 0.0
+
+        decay_factor = math.exp(-math.log(2) * days_since / half_life)
+        return decay_factor
+
     def map_to_risk_level(self, normalized_score: float) -> str:
         """根据阈值映射风险等级（P1b-03：输入为 0-100 归一化分）。
 
@@ -153,6 +209,7 @@ class RiskScorer:
         history_factor: float,
         evidence_factor: float,
         causal_factor: float = 1.0,
+        recency_decay: float = 1.0,
     ) -> float:
         """计算最终风险分（对数域求和，防乘法溢出）。
 
@@ -167,6 +224,8 @@ class RiskScorer:
 
         边界：系数 = 1（增量 factor = 0）时 ``log(1+0)=0``，不影响计算；
         任一系数 ≤ 0（无物理意义）时整体按 0 处理，与旧公式乘以 0 一致。
+
+        P1b-05 时效衰减：``recency_decay`` 因子在最后乘入总分，近期事件评分更高。
         """
         if ss <= 0 or ps <= 0:
             return 0.0
@@ -177,6 +236,7 @@ class RiskScorer:
             history_factor,
             evidence_factor,
             causal_factor,
+            recency_decay,
         ):
             if factor <= 0.0:
                 return 0.0
@@ -212,6 +272,7 @@ class RiskScorer:
             historical_counts.get("product_history_count", 0)
         )
         evidence_factor = self.evidence_factor(event.get("source_id", "unknown"))
+        recency_decay = self.recency_decay_factor(event.get("publish_date"))
 
         total = self.calculate_total_score(
             ss,
@@ -221,6 +282,7 @@ class RiskScorer:
             history_factor,
             evidence_factor,
             causal_factor,
+            recency_decay,
         )
 
         rs_level = self.map_to_risk_level(self.normalize_score(total))
@@ -234,6 +296,7 @@ class RiskScorer:
             history_factor=history_factor,
             evidence_factor=evidence_factor,
             causal_factor=causal_factor,
+            recency_decay=round(recency_decay, 4),
             total_score=round(total, 2),
             normalized_score=round(self.normalize_score(total), 2),
             rs_level=rs_level,
