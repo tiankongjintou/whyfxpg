@@ -168,7 +168,7 @@ class BrazilANVISAAdapter(BaseSourceAdapter):
                 responses = self._parse_api_data(data, "pt")
                 if responses:
                     return self._filter_by_date(responses, since)
-            except Exception as exc:  # noqa: BLE001 — 降级处理,刻意吞异常
+            except Exception as exc:  # noqa: BLE001 -- fallback, swallow exceptions
                 import logging
 
                 logging.getLogger(__name__).warning(
@@ -178,7 +178,7 @@ class BrazilANVISAAdapter(BaseSourceAdapter):
                 )
                 continue
 
-        return []
+            return []
 
     def _fetch_pages(
         self, since: datetime | None = None
