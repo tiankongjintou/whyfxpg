@@ -76,3 +76,56 @@ sources:
       link: a@href
       date: .date
       content: ''
+  canada_health:
+    name: 加拿大卫生部召回 (Health Canada / Santé Canada)
+    url: https://healthcanada.gc.ca/recall-alert-rappels-api/search?
+    source_type: api
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: static
+    parser: json
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+      Accept: application/json
+      Accept-Language: en-CA, fr-CA, en-US, fr
+    selector: {}
+  singapore_cpss:
+    name: 新加坡消费者保护局 (CPSS)
+    url: https://www.enterprise.gov.sg/en/consumers/safety-alerts
+    source_type: web
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+      Accept-Language: en-SG, en-US, en
+    selector:
+      list: article
+      title: h2, h3
+      link: a@href
+      date: ''
+      content: ''
+  japan_caa:
+    name: 日本消費者庁 (Consumer Affairs Agency)
+    url: https://www.caa.go.jp/
+    source_type: web
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+      Accept-Language: ja-JP, ja, en-US, en
+    selector:
+      list: .release, .notice, article
+      title: h2, h3
+      link: a@href
+      date: time
+      content: ''
