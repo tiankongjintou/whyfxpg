@@ -4,7 +4,6 @@ Source adapters package.
 
 from whyfxpg.ports.source_adapter import SourceRegistry
 
-from .brazil_anvisa_adapter import BrazilANVISAAdapter
 from .australia_acc_adapter import AustraliaACCCAdapter
 from .brazil_anvisa_adapter import BrazilANVISAAdapter
 from .canada_health_adapter import CanadaHealthAdapter
@@ -20,6 +19,7 @@ from .singapore_cpss_adapter import SingaporeCPSSAdapter
 
 # 注册内置适配器（确保注册表非空）
 _agents = [
+    AustraliaACCCAdapter,
     BrazilANVISAAdapter,
     CanadaHealthAdapter,
     IndiaBISAdapter,
@@ -30,8 +30,6 @@ _agents = [
     SaudiSFDAAdapter,
     SingaporeCPSSAdapter,
 ]
-]
-]
 for _cls in _agents:
     try:
         SourceRegistry.register(_cls())
@@ -39,15 +37,16 @@ for _cls in _agents:
         pass  # 已注册
 
 __all__ = [
+    "AustraliaACCCAdapter",
     "BrazilANVISAAdapter",
     "CanadaHealthAdapter",
-    "ChinaSAMRAdapter",
     "HttpSourceAdapter",
     "InMemorySourceAdapter",
     "IndiaBISAdapter",
     "JapanCAAAdapter",
     "KoreaSafetyAdapter",
     "MexicoPROFECOAdapter",
+    "NewZealandMVCAdapter",
     "SaudiSFDAAdapter",
     "SingaporeCPSSAdapter",
     "SourceRegistry",
