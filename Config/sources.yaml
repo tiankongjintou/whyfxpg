@@ -129,3 +129,22 @@ sources:
       link: a@href
       date: time
       content: ''
+  korea_safety:
+    name: 韩国产品安全院 (Korea Product Safety Korea / 제품안전정보원)
+    url: https://www.kca.go.kr/pub/rec/civilappealL.do
+    source_type: web
+    enabled: true
+    priority: 1
+    check_interval: 1d
+    fetch_method: static
+    parser: html_list
+    keywords_ref: international
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+      Accept-Language: ko-KR, ko, en-US, en
+    selector:
+      list: tr, li, article
+      title: h2, h3
+      link: a@href
+      date: ''
+      content: ''

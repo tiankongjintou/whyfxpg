@@ -8,6 +8,7 @@ from .canada_health_adapter import CanadaHealthAdapter
 from .http_source_adapter import HttpSourceAdapter
 from .in_memory_source_adapter import InMemorySourceAdapter
 from .japan_caa_adapter import JapanCAAAdapter
+from .korea_safety_adapter import KoreaSafetyAdapter
 from .singapore_cpss_adapter import SingaporeCPSSAdapter
 
 # 注册内置适配器（确保注册表非空）
@@ -20,6 +21,10 @@ try:
 except ValueError:
     pass
 try:
+    SourceRegistry.register(KoreaSafetyAdapter())
+except ValueError:
+    pass
+try:
     SourceRegistry.register(SingaporeCPSSAdapter())
 except ValueError:
     pass
@@ -29,6 +34,7 @@ __all__ = [
     "HttpSourceAdapter",
     "InMemorySourceAdapter",
     "JapanCAAAdapter",
+    "KoreaSafetyAdapter",
     "SingaporeCPSSAdapter",
     "SourceRegistry",
 ]
