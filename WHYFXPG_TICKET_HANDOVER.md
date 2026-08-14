@@ -80,18 +80,18 @@ mypy whyfxpg/ whyfxpg_api/
 - [ ] P0-6 数据源调研矩阵 ✅ 已完成
 
 ### Phase 1 状态（API 平台）
-- [ ] P01 SQLite → PostgreSQL 多租户迁移 ⬜ 未开始
-- [ ] P02 FastAPI 项目骨架 + 认证中间件 ⬜ 未开始
-- [ ] P03 核心 REST API 端点 ⬜ 未开始
-- [ ] P04 计量计费 + 额度限流 ⬜ 未开始
-- [ ] P05 Webhook 订阅系统 ⬜ 未开始
-- [ ] P06 Docker 一键部署 ⬜ 未开始
-- [ ] P07 Pydantic 配置 Schema 校验 ⬜ 未开始（可并行）
-- [ ] TD01 评分乘法溢出修复 ⬜ 未开始（可并行）
-- [ ] TD02 数据库索引补全 ⬜ 未开始（可并行）
+- [x] P01 SQLite → PostgreSQL 多租户迁移 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P02 FastAPI 项目骨架 + 认证中间件 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P03 核心 REST API 端点 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P04 计量计费 + 额度限流 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P05 Webhook 订阅系统 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P06 Docker 一键部署 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] P07 Pydantic 配置 Schema 校验 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] TD01 评分乘法溢出修复 ✅ 已完成（2026-08-11 reasonix-agent）
+- [x] TD02 数据库索引补全 ✅ 已完成（2026-08-11 reasonix-agent）
 
 ### Phase 2 状态（数据源扩充）
-- [ ] P08 数据源扩充：第一优先级 × 4 ⬜ 未开始
+- [ ] P08 数据源扩充：第一优先级 × 4 ✅ 已完成（2026-08-14）
 - [ ] P09 数据源扩充：第二优先级 × 4 ⬜ 未开始
 - [ ] P10 多语言处理架构 ⬜ 未开始
 - [ ] P11 数据源扩充：第三优先级 × 4 ⬜ 未开始
@@ -105,10 +105,8 @@ mypy whyfxpg/ whyfxpg_api/
 
 **Frontier Tickets（无阻塞，可立即领取）：**
 
-1. **P01** — `.scratch/wayfinder/issues/phase1-api-platform/P01-sqlite-to-postgresql.md`
-2. **P07** — `.scratch/wayfinder/issues/phase1-api-platform/P07-pydantic-config.md`（可与 P01 并行）
-3. **TD01** — `.scratch/wayfinder/issues/phase1-api-platform/TD01-score-overflow-fix.md`（可与任何 ticket 并行）
-4. **TD02** — `.scratch/wayfinder/issues/phase1-api-platform/TD02-database-indexes.md`（可与任何 ticket 并行）
+1. **P09** — `.scratch/wayfinder/issues/phase2-data-sources/P09-source-adapters-priority2.md`（P08 已完成，可领取）
+2. **P10** — `.scratch/wayfinder/issues/phase2-data-sources/P10-multilingual-pipeline.md`（可与 P09 并行）
 
 **Blocked Tickets（依赖未完成，不能领取）：**
 - P02, P03, P04 → 等待 P01 完成
