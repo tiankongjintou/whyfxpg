@@ -171,6 +171,16 @@ history_factor:
   max: 1.5
   min: 1.0
 
+# 时效衰减配置（P1b-05）
+# 公式：decay_factor = exp(-ln(2) * days_since_publish / half_life_days)
+# - 当天事件：decay_factor = 1.0
+# - 半衰期（默认90天）后：decay_factor ≈ 0.5
+# - window_days=0 表示不限制窗口
+recency_decay:
+  half_life_days: 90    # 半衰期（天）
+  window_days: 0       # 评分窗口（天），0=不限制
+  enabled: true
+
 # 证据来源修正系数
 evidence_factors:
   dpac_recall: 1.0

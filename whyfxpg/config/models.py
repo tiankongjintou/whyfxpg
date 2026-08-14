@@ -131,6 +131,25 @@ class HistoryFactorConfig:
 
 
 @dataclass
+class RecencyDecayConfig:
+    """时效衰减配置（P1b-05）。"""
+
+    half_life_days: int = 90
+    window_days: int = 0  # 0 = 不限制
+    enabled: bool = True
+
+    @classmethod
+    def from_dict(cls, d: Any) -> "RecencyDecayConfig":
+        if not isinstance(d, dict):
+            d = {}
+        return cls(
+            half_life_days=_as_int(d.get("half_life_days"), 90),
+            window_days=_as_int(d.get("window_days"), 0),
+            enabled=_as_bool(d.get("enabled"), True),
+        )
+
+
+@dataclass
 class RiskModelConfig:
     version: str = "1.0"
     domain_id: str = ""
@@ -149,6 +168,7 @@ class RiskModelConfig:
     product_category_keywords: dict[str, list[str]] = field(default_factory=dict)
 
     history_factor: HistoryFactorConfig = field(default_factory=HistoryFactorConfig)
+    recency_decay: RecencyDecayConfig = field(default_factory=RecencyDecayConfig)
     evidence_factors: dict[str, float] = field(default_factory=dict)
     risk_level_thresholds: dict[str, int] = field(default_factory=dict)
     score_formula: str = "base"
@@ -178,6 +198,7 @@ class RiskModelConfig:
             product_factors={str(k): _as_float(v, 1.0) for k, v in (d.get("product_factors") or {}).items()},
             product_category_keywords=_as_str_list_dict(d.get("product_category_keywords")),
             history_factor=HistoryFactorConfig.from_dict(d.get("history_factor")),
+            recency_decay=RecencyDecayConfig.from_dict(d.get("recency_decay")),
             evidence_factors={str(k): _as_float(v, 1.0) for k, v in (d.get("evidence_factors") or {}).items()},
             risk_level_thresholds={str(k): _as_int(v, 0) for k, v in (d.get("risk_level_thresholds") or {}).items()},
             score_formula=_as_str(d.get("score_formula"), "base"),

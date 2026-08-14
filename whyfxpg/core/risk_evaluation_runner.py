@@ -151,6 +151,12 @@ class RiskEvaluationRunner:
                 )
                 evaluated += 1
 
+                # 动态评分刷新：新信号触发相关历史事件重算
+                scored_event = {**event, **result}
+                rescored_count = risk_store.rescore_related(scored_event)
+                if rescored_count > 0:
+                    errors.append(f"{event['event_id']}[重算]: 触发 {rescored_count} 条相关事件")
+
                 if result["rs_level"] in ("S", "M"):
                     try:
                         scored_event = {**event, **result}

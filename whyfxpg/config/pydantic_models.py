@@ -43,6 +43,16 @@ class HistoryFactorConfig(BaseModel):
     min: float = 1.0
 
 
+class RecencyDecayConfig(BaseModel):
+    """时效衰减配置（P1b-05）。"""
+
+    half_life_days: int = 90
+    window_days: int = 0  # 0 = 不限制
+    enabled: bool = True
+
+    model_config = {"extra": "ignore"}  # 忽略 YAML 中未声明的额外字段
+
+
 class RiskModelConfig(BaseModel):
     """风险模型配置（对应 Config/risk_model.yaml）。"""
 
@@ -63,6 +73,7 @@ class RiskModelConfig(BaseModel):
     product_category_keywords: dict[str, list[str]] = Field(default_factory=dict)
 
     history_factor: HistoryFactorConfig = Field(default_factory=HistoryFactorConfig)
+    recency_decay: RecencyDecayConfig = Field(default_factory=RecencyDecayConfig)
     evidence_factors: dict[str, float] = Field(default_factory=dict)
     risk_level_thresholds: dict[str, int] = Field(default_factory=dict)
     score_formula: str = "base"

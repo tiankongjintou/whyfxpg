@@ -1,6 +1,6 @@
 """Auto-split store module."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from whyfxpg.core.stores.unit_of_work import BaseStore
@@ -107,3 +107,59 @@ class RiskEventStore(BaseStore):
             "UPDATE risk_events SET hazard_desc = hazard_desc || ? WHERE event_id = ?",
             (f"\n\n【AI风险分析】{reasoning}", event_id),
         )
+
+    def rescore_related(self, new_event: dict[str, Any]) -> int:
+        """触发相关历史事件重新评分（动态评分刷新）。
+
+        查找最近 N 天内相同 product_category 或 hazard_type 的已评分事件，
+        将其 ss_score/ps_score 置 NULL，使其下次 fetch_pending() 被重新取出。
+
+        防止循环：新信号触发只重算一次（通过 rescored_at 判断，
+        只重算 evaluated_at < new_event["extracted_at"] 的事件）。
+
+        Returns:
+            被重算的事件数。
+        """
+        cursor = self.uow.connection.cursor()
+
+        # 查找相关已评分事件（最近90天内，相同品类或危害类型，未被本次信号重算过）
+        since = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")  # noqa: DTZ005
+        product_category = new_event.get("product_category", "普通机电")
+        hazard_type = new_event.get("hazard_type", "组合危险")
+        new_extracted_at = new_event.get("extracted_at", "")
+
+        cursor.execute(
+        """
+        SELECT event_id, extracted_at, evaluated_at, rescored_at
+        FROM risk_events
+        WHERE publish_date >= ?
+          AND (product_category = ? OR hazard_type = ?)
+          AND ss_score IS NOT NULL
+          AND ps_score IS NOT NULL
+          AND event_id != ?
+          AND (
+              rescored_at IS NULL
+              OR rescored_at < ?
+          )
+        ORDER BY evaluated_at DESC
+        """,
+        (since, product_category, hazard_type, new_event.get("event_id", ""), new_extracted_at),
+        )
+        related = cursor.fetchall()
+        if not related:
+            return 0
+
+        # 置 NULL 并记录 rescored_at
+        now = datetime.now().isoformat()  # noqa: DTZ005
+        updated = 0
+        for row in related:
+            cursor.execute(
+                """
+                UPDATE risk_events
+                SET ss_score = NULL, ps_score = NULL, rescored_at = ?
+                WHERE event_id = ?
+                """,
+                (now, row[0]),
+            )
+            updated += 1
+        return updated
