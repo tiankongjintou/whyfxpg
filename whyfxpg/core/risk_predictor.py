@@ -324,16 +324,23 @@ class RiskPredictor:
         predicted_avg = sum(predictions) / len(predictions)
         current_avg = sum(avg_scores) / len(avg_scores) if avg_scores else 0
 
+        # P0-1 修复：先归一化到 0-100 量纲，再用 S≥85/M≥70/L≥50 阈值
+        # 归一化公式与 risk_scorer.normalize_score 保持一致（C=3000）
+        normalized = 100.0 * predicted_avg / (predicted_avg + 3000) if predicted_avg > 0 else 0.0
+        current_norm = 100.0 * current_avg / (current_avg + 3000) if current_avg > 0 else 0.0
+
         return {
             "product_name": product_name,
             "country": country,
             "current_avg_score": round(current_avg, 2),
+            "current_normalized_score": round(current_norm, 2),
             "predicted_avg_score": round(predicted_avg, 2),
+            "predicted_normalized_score": round(normalized, 2),
             "trend": "increasing" if predicted_avg > current_avg * 1.2 else \
                      "decreasing" if predicted_avg < current_avg * 0.8 else "stable",
-            "risk_level": "S" if predicted_avg >= 8000 else \
-                          "M" if predicted_avg >= 3000 else \
-                          "L" if predicted_avg >= 1000 else "A",
+            "risk_level": "S" if normalized >= 85 else \
+                          "M" if normalized >= 70 else \
+                          "L" if normalized >= 50 else "A",
             "prediction_months": [
                 {"month": m, "predicted_score": round(p, 0)}
                 for m, p in zip(
