@@ -26,6 +26,13 @@ from ..services.llm_service import LLMService
 from .config_loader import DEFAULT_CONFIG_DIR, ConfigLoader
 from .db import get_db_connection
 
+# P0-2: 语言检测依赖（可选，缺失时回退为 None）
+try:
+    import langdetect
+    _HAS_LANGDETECT = True
+except ImportError:
+    _HAS_LANGDETECT = False
+
 
 def _rule_applies(rule: ExtractRule, source_id: str) -> bool:
     """检查规则是否对当前来源生效（空列表或含 '*' 表示全部）。"""
@@ -135,6 +142,25 @@ class ExtractEngine:
             return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
         return value
 
+    # P0-2: 语言检测
+    def detect_language(self, text: str) -> str | None:
+        """检测文本语言（ISO 639-1 代码，如 'en', 'zh-cn', 'ja'）。
+
+        使用 langdetect 库（如已安装），否则返回 None。
+        为提高准确性，采样前 500 个可打印字符进行检测。
+        """
+        if not _HAS_LANGDETECT or not text:
+            return None
+        sample = "".join(c for c in text[:500] if c.isprintable() and not c.isspace())
+        if not sample:
+            return None
+        try:
+            code = langdetect.detect(sample)
+            # langdetect 返回 'zh-cn' 而非 'zh'，统一取前 2 位
+            return code[:2] if len(code) > 2 else code
+        except Exception:  # noqa: BLE001 — 外部依赖兜底,刻意吞异常
+            return None
+
     def _llm_extract(self, text: str) -> dict[str, Any]:
         """
         LLM 抽取——使用 MiniMax 从文本中抽取结构化实体
@@ -226,12 +252,17 @@ class ExtractEngine:
             "model_version": "",
             "extraction_confidence": 0.5,
             "review_status": "auto",
+            "extracted_language": None,  # P0-2: 由 detect_language() 填充（轨2后可能被 LLM 结果覆盖）
         }
 
         # 轨2：LLM 抽取结构化实体（product_name/brand/model/hs_code/manufacturer/country/standards）
         llm_result = self._llm_extract(text_clean)
         if llm_result and "llm_error" not in llm_result:
             event = self._merge_extraction(event, llm_result)
+
+        # P0-2: 若 LLM 未返回语言信息，用检测器填充
+        if event.get("extracted_language") is None:
+            event["extracted_language"] = self.detect_language(text_clean)
 
         return event
 
@@ -269,8 +300,8 @@ class ExtractEngine:
                         probability_level, ps_score, country_factor, product_factor,
                         history_factor, evidence_factor, total_score, rs_level, standards,
                         original_text, extracted_at, evaluated_at, config_version, model_version,
-                        extraction_confidence, review_status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        extraction_confidence, review_status, extracted_language
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
                         event["event_id"], event["page_id"], event["source_id"],
@@ -284,6 +315,7 @@ class ExtractEngine:
                         event["standards"], event["original_text"], event["extracted_at"],
                         event["evaluated_at"], event["config_version"], event["model_version"],
                         event["extraction_confidence"], event["review_status"],
+                        event.get("extracted_language"),  # P0-2
                     ),
                 )
 
